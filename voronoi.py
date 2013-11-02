@@ -1,12 +1,33 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from scipy.spatial import Voronoi
+from scipy.spatial import Voronoi, voronoi_plot_2d
 
 city_aea = pd.read_csv('output/city_aea')
 stops_aea = pd.read_csv('output/stops_aea')
 
-stops_voronoi = Voronoi(stops_aea[['lon','lat']])
+vor = Voronoi(stops_aea[['lon','lat']])
+# far points will provide extra vertices, 'far away,' connecting the vertices (one of which is -1 for infinity) in far_vertices
+far_points = []
+far_vertices = []
+# taken from scipy-0.13.0/scipy/spatial/_plotuitls.py
+ptp_bound = vor.points.ptp(axis=0)
+center = vor.points.mean(axis=0)
+for pointidx, simplex in zip(vor.ridge_points, vor.ridge_vertices):
+    simplex = np.asarray(simplex)
+    if np.any(simplex < 0):
+        i = simplex[simplex >= 0][0]  # finite end Voronoi vertex
+
+        t = vor.points[pointidx[1]] - vor.points[pointidx[0]]  # tangent
+        t /= np.linalg.norm(t)
+        n = np.array([-t[1], t[0]])  # normal
+
+        midpoint = vor.points[pointidx].mean(axis=0)
+        direction = np.sign(np.dot(midpoint - center, n)) * n
+        far_point = vor.vertices[i] + direction * ptp_bound.max()
+        far_points.append(far_point)
+        far_vertices.append(simplex)
+
 
 # # Run the following code to find which islands contain which stops. Minor modification will display all at the same time.
 # for snum in pd.unique(city_aea['SID']):
