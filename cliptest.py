@@ -1,6 +1,22 @@
 import numpy as np
 from scipy.spatial import Voronoi
 
+def CCW(a,b,c):
+    return np.linalg.det(np.array([ [1, a[0], a[1]],
+                                    [1, b[0], b[1]],
+                                    [1, c[0], c[1]] ]) ) > 0
+
+def intersect(l1,l2):
+    x1 = l1[0]
+    y1 = l1[1]
+    x2 = l2[0]
+    y2 = l2[1]
+    if CCW(x1, x2, y2) == CCW(y1, x2, y2):
+        return False
+    elif CCW(x1, y1, x2) == CCW(x1, y1, y2):
+        return False
+    return True
+
 # points will be both the points for which we calculate a Voronoi diagram, and the basis of our clipping region
 points = np.array([[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 0], [2, 1], [2, 2]])
 vor = Voronoi(points)
@@ -33,7 +49,7 @@ for j in np.arange(np.shape(vor.ridge_points)[0]):
         # reassign negative vertex index (negative value is always first) to newly added vertex
         vor.ridge_vertices[j][0] = np.shape(vor.vertices)[0] - 1
 
-# loop through pointidx, simplex again; change any negative values by adding the far_point to vor.vertices, and reassigning the vertex in simplex (vor.ridge_vertices) to point to the new vertex
+# NEED TO UPDATE VOR.REGIONS
 
 # vertices in points to give clipping region points, in order
 clipV = [0, 1, 2, 5, 8, 7, 6, 3, 0]
