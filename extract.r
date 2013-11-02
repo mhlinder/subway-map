@@ -1,7 +1,4 @@
 # # Extract NYC, subway data from shapefile
-# nybb_13a/ is from http://www.nyc.gov/html/dcp/html/bytes/dwndistricts.shtml
-# google_transit/ is from http://www.mta.info/developers/download.html
-
 library(maptools)
 library(rgdal)
 
@@ -12,11 +9,11 @@ library(rgdal)
 # 	proj4string(shape)
 # returning:
 # 	+proj=lcc +lat_1=40.66666666666666 +lat_2=41.03333333333333 +lat_0=40.16666666666666 +lon_0=-74 +x_0=300000 +y_0=0 +datum=NAD83 +units=us-ft +no_defs +ellps=GRS80 +towgs84=0,0,0
-nyc.shp <- readShapePoly('extra/nybb_13a/nybb',proj4string=CRS('+proj=lcc +lat_1=40.66666666666666 +lat_2=41.03333333333333 +lat_0=40.16666666666666 +lon_0=-74 +x_0=300000 +y_0=0 +datum=NAD83 +units=us-ft +no_defs +ellps=GRS80 +towgs84=0,0,0'))
+nyc.shp <- readShapePoly('indata/nybb_13a/nybb',proj4string=CRS('+proj=lcc +lat_1=40.66666666666666 +lat_2=41.03333333333333 +lat_0=40.16666666666666 +lon_0=-74 +x_0=300000 +y_0=0 +datum=NAD83 +units=us-ft +no_defs +ellps=GRS80 +towgs84=0,0,0'))
 city <- spTransform(nyc.shp,CRS('+proj=longlat +datum=WGS84')) # convert to WGS84 a la MTA data
 
 # # Read subway stations
-stops <- read.csv('extra/google_transit/stops.txt')
+stops <- read.csv('indata/google_transit/stops.txt')
 stops_parents <- stops[stops$location_type==1,]
 stops_parents <- SpatialPointsDataFrame(cbind(stops_parents$stop_lon,stops_parents$stop_lat),as.data.frame(stops_parents$stop_name),proj4str=CRS("+proj=longlat +datum=WGS84"))
 
@@ -37,5 +34,5 @@ colnames(stops_aea) <- c("stop_name","lon","lat")
 # plotPolys(city_aea_ps, proj=TRUE)
 
 # # Export
-write.table(city_aea, 'city_aea', sep=',')
-write.table(stops_aea, 'stops_aea', sep=',')
+write.table(city_aea, 'output/city_aea', sep=',')
+write.table(stops_aea, 'output/stops_aea', sep=',')

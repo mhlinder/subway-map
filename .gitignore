@@ -1,4 +1,4 @@
-extra/
-Old/
+indata/
+output/
 *.swp
 .DS*
