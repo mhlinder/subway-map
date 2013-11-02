@@ -1,5 +1,4 @@
-# Extract NYC, subway data from shapefile
-
+# # Extract NYC, subway data from shapefile
 # nybb_13a/ is from http://www.nyc.gov/html/dcp/html/bytes/dwndistricts.shtml
 # google_transit/ is from http://www.mta.info/developers/download.html
 
@@ -28,13 +27,15 @@ city_aea <- spTransform(city,CRS('+proj=aea +datum=WGS84 +lon_0=-96'))
 lps <- getSpPPolygonsLabptSlots(city_aea)
 onebin <- cut(lps[,1], range(lps[,1]), include.lowest=TRUE)
 city_aea <- unionSpatialPolygons(city_aea, onebin)
+city_aea <- SpatialPolygons2PolySet(city_aea)
 
 # Stops
 stops_aea <- spTransform(stops_parents,CRS('+proj=aea +datum=WGS84 +lon_0=-96'))
+stops_aea <- as.data.frame(stops_aea)
+colnames(stops_aea) <- c("stop_name","lon","lat")
 
-# # Convert to data frame with:
-# stops_aea_df <- as.data.frame(stops_aea)
-# colnames(stops_aea_df) <- c("stop_name","lon","lat")
-# # Convert to PolygonSet with:
-# city_aea_ps <- SpatialPolygons2PolySet(city_aea)
 # plotPolys(city_aea_ps, proj=TRUE)
+
+# # Export
+write.table(city_aea, 'city_aea', sep=',')
+write.table(stops_aea, 'stops_aea', sep=',')

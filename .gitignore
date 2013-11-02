@@ -1,2 +1,4 @@
 extra/
 Old/
+*.swp
+.DS*
