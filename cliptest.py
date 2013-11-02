@@ -8,10 +8,14 @@ vor = Voronoi(points)
 far_points = []
 far_vertices = []
 far_ridge_points = []
-# taken from scipy-0.13.0/scipy/spatial/_plotuitls.py
+# adapted from scipy-0.13.0/scipy/spatial/_plotuitls.py
 ptp_bound = vor.points.ptp(axis=0)
 center = vor.points.mean(axis=0)
-for pointidx, simplex in zip(vor.ridge_points, vor.ridge_vertices):
+vor.ridge_vertices = np.array(vor.ridge_vertices)
+for j in np.arange(np.shape(vor.ridge_points)[0]):
+    pointidx = vor.ridge_points[j]
+    simplex = vor.ridge_vertices[j]
+
     simplex = np.asarray(simplex)
     if np.any(simplex < 0):
         i = simplex[simplex >= 0][0]  # finite end Voronoi vertex
@@ -24,9 +28,10 @@ for pointidx, simplex in zip(vor.ridge_points, vor.ridge_vertices):
         direction = np.sign(np.dot(midpoint - center, n)) * n
         far_point = vor.vertices[i] + direction * ptp_bound.max()
 
-        far_points.append(far_point)
-        far_vertices.append(simplex)
-        far_ridge_points.append(pointidx)
+        # add new vertex (far_point) to vertices
+        vor.vertices = np.vstack([vor.vertices, far_point])
+        # reassign negative vertex index (negative value is always first) to newly added vertex
+        vor.ridge_vertices[j][0] = np.shape(vor.vertices)[0] - 1
 
 # loop through pointidx, simplex again; change any negative values by adding the far_point to vor.vertices, and reassigning the vertex in simplex (vor.ridge_vertices) to point to the new vertex
 
@@ -34,6 +39,6 @@ for pointidx, simplex in zip(vor.ridge_points, vor.ridge_vertices):
 clipV = [0, 1, 2, 5, 8, 7, 6, 3, 0]
 clips = points[clipV]
 
-for i in np.arange(1, np.shape(clips)[0]):
-    print clips[[i-1, i]]
-    # for j in np.arange(1, np.shape(clips)[0]):
+# for i in np.arange(1, np.shape(clips)[0]):
+    # print clips[[i-1, i]]
+    # # for j in np.arange(1, np.shape(clips)[0]):
