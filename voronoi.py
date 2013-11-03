@@ -86,6 +86,7 @@ for j in np.arange(np.shape(vor.ridge_points)[0]):
 #   7.   58  brooklyn / queens  brooklyn / queens
 islands = [2, 64, 22, 48, 52, 56, 58]
 
+results = []
 for i in islands:
     clip = city_aea[city_aea['SID']==i]
     clip = np.array(clip)[:,3:5] # select x, y columns of clip
@@ -100,5 +101,6 @@ for i in islands:
 
     result = intersect(lines[:,0:4], lines[:,4:8])
     result = result.astype(bool)
+    results.append(result)
 
     # intersections = lines[result] # lines that intersect
