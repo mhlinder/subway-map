@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
-from scipy.spatial import Voronoi
+from scipy.spatial import Voronoi, voronoi_plot_2d
+import matplotlib.pyplot as plt
 
 def CCW(a,b,c):
     n = np.shape(a)[0]

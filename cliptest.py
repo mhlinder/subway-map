@@ -1,5 +1,36 @@
 import numpy as np
-from scipy.spatial import Voronoi
+from scipy.spatial import Voronoi, voronoi_plot_2d
+import matplotlib.pyplot as plt
+
+# raycasting adapted from http://geospatialpython.com/2011/01/point-in-polygon.html
+# True if point is in poly; false if not
+def raycast(p, poly):
+    x,y = p[0],p[1]
+    n = poly.shape[0]
+    inside = False
+
+    p1x,p1y = poly[0]
+    for i in range(n+1):
+        p2x,p2y = poly[i % n]
+        if y > min(p1y,p2y):
+            if y <= max(p1y,p2y):
+                if x <= max(p1x,p2x):
+                    if p1y != p2y:
+                        xints = (y-p1y)*(p2x-p1x)/(p2y-p1y)+p1x
+                    if p1x == p2x or x <= xints:
+                        inside = not inside
+        p1x,p1y = p2x,p2y
+
+    return inside
+
+# p = (x1, y1, x2, y2, x3, y3, x4, y4)
+# see http://en.wikipedia.org/wiki/Line-line_intersection
+def intersection(p):
+    px = ( (p[:,0]*p[:,3] - p[:,1]*p[:,2])*(p[:,4] - p[:,6]) - (p[:,4]*p[:,7] - p[:,5]*p[:,6])*(p[:,0] - p[:,2]) )  /  ( (p[:,0] - p[:,2])*(p[:,5] - p[:,7]) - (p[:,1] - p[:,3])*(p[:,4] - p[:,6]) )
+    py = ( (p[:,0]*p[:,3] - p[:,1]*p[:,2])*(p[:,5] - p[:,7]) - (p[:,4]*p[:,7] - p[:,5]*p[:,6])*(p[:,1] - p[:,3]) )  /  ( (p[:,0] - p[:,2])*(p[:,5] - p[:,7]) - (p[:,1] - p[:,3])*(p[:,4] - p[:,6]) )
+    print px
+    print py
+    return np.vstack([px,py])
 
 def CCW(a,b,c):
     n = np.shape(a)[0]
@@ -76,4 +107,17 @@ lines = np.hstack([np.tile(clips.T,voronoi_lines.shape[0]).T, voronoi_lines.T.re
 result = intersect(lines[:,0:4], lines[:,4:8])
 result = result.astype(bool)
 
-intersections = lines[result] # lines that intersect
+intersection_pairs = lines[result] # lines that intersect
+intersections = intersection(intersection_pairs)
+intersections = intersections.T
+
+interior = []
+for ridge in vor.ridge_vertices:
+    p1 = vor.vertices[ridge[0]]
+    p2 = vor.vertices[ridge[1]]
+    p1in = raycast(p1,points[clipV])
+    p2in = raycast(p2,points[clipV])
+    if p1in or p2in:
+        if p1in and p2in:
+            interior.append([p1,p2])
+interior = np.array(interior)
