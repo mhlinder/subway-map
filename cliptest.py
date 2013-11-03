@@ -54,7 +54,12 @@ for j in np.arange(np.shape(vor.ridge_points)[0]):
 # vertices in points to give clipping region points, in order
 clipV = [0, 1, 2, 5, 8, 7, 6, 3, 0]
 clips = points[clipV]
+clips = np.hstack([clips[:-1],clips[1:]])
 
+# combine all path lines with voronoi lines
+# this would do it if a = np.array([1,2,3]): np.transpose([np.tile(a, len(a)), np.repeat(a, len(a))])
+# we change this slightly for our two-dimensional array
+clips = np.hstack([np.tile(clips.T,clips.shape[0]).T, clips.T.repeat(clips.shape[0],1).T])
 # for i in np.arange(1, np.shape(clips)[0]):
     # print clips[[i-1, i]]
     # # for j in np.arange(1, np.shape(clips)[0]):
