@@ -69,10 +69,9 @@ clips = np.hstack([clips[:-1],clips[1:]])
 voronoi_lines = np.hstack([vor.vertices[vor.ridge_vertices][:,0], vor.vertices[vor.ridge_vertices][:,1]])
 
 # combine all path lines with voronoi lines
-# this would do it if a = np.array([1,2,3]): np.transpose([np.tile(a, len(a)), np.repeat(a, len(a))])
-# we change this slightly for our two-dimensional array
-# clips = np.hstack([np.tile(clips.T,clips.shape[0]).T, clips.T.repeat(clips.shape[0],1).T])
-
+# this would do it if a = np.array([1,2,3]): np.transpose([np.tile(a, len(b)), np.repeat(b, len(a))])
+# we change this slightly for our two-dimensional arrays
 lines = np.hstack([np.tile(clips.T,voronoi_lines.shape[0]).T, voronoi_lines.T.repeat(clips.shape[0],1).T])
 
 result = intersect(lines[:,0:4], lines[:,4:8])
+result = result.astype(bool)
