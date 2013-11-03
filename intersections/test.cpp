@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include <iostream>
 #include <stdlib.h>
 #include <time.h>
 using namespace std;
@@ -15,17 +15,28 @@ bool intersect(double a, double b, double c, double d, double e, double f, doubl
 }
 
 int main() { 
-    int n = 100000000;
+    double aa[3] = { 0, 0, 1};
+    double bb[3] = { 0, 0, 0};
+    double cc[3] = { 0, 0, 2};
+    double dd[3] = { 2, 2, 3};
+    double ee[3] = {-1, 1,-1};
+    double ff[3] = { 1, 0, 1};
+    double gg[3] = { 2, 2, 2};
+    double hh[3] = { 1, 3, 1}; 
+    int n = 3;
+    int i;
     for (int i=0 ; i < n ; i++) {
-        double a = rand();
-        double b = rand();
-        double c = rand();
-        double d = rand();
-        double e = rand();
-        double f = rand();
-        double g = rand();
-        double h = rand();
-        intersect(a,b,c,d,e,f,g,h);
+        cout << i << ", ";
+        double a = aa[i];
+        double b = bb[i];
+        double c = cc[i];
+        double d = dd[i];
+        double e = ee[i];
+        double f = ff[i];
+        double g = gg[i];
+        double h = hh[i];
+        if (intersect(a,b,c,d,e,f,g,h)) { printf("yes\n"); }
+        else { printf("no\n"); }
     }
 
     return 0;
