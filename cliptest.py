@@ -28,8 +28,6 @@ def raycast(p, poly):
 def intersection(p):
     px = ( (p[:,0]*p[:,3] - p[:,1]*p[:,2])*(p[:,4] - p[:,6]) - (p[:,4]*p[:,7] - p[:,5]*p[:,6])*(p[:,0] - p[:,2]) )  /  ( (p[:,0] - p[:,2])*(p[:,5] - p[:,7]) - (p[:,1] - p[:,3])*(p[:,4] - p[:,6]) )
     py = ( (p[:,0]*p[:,3] - p[:,1]*p[:,2])*(p[:,5] - p[:,7]) - (p[:,4]*p[:,7] - p[:,5]*p[:,6])*(p[:,1] - p[:,3]) )  /  ( (p[:,0] - p[:,2])*(p[:,5] - p[:,7]) - (p[:,1] - p[:,3])*(p[:,4] - p[:,6]) )
-    print px
-    print py
     return np.vstack([px,py])
 
 def CCW(a,b,c):
@@ -111,8 +109,11 @@ intersection_pairs = lines[result] # lines that intersect
 intersections = intersection(intersection_pairs)
 intersections = intersections.T
 
+# This doesn't work
 interior = []
 for ridge in vor.ridge_vertices:
+    ridge_coords = vor.vertices[ridge]
+    ridge_coords = np.hstack([ridge_coords[:,0], ridge_coords[:,1]])
     p1 = vor.vertices[ridge[0]]
     p2 = vor.vertices[ridge[1]]
     p1in = raycast(p1,points[clipV])
@@ -120,4 +121,7 @@ for ridge in vor.ridge_vertices:
     if p1in or p2in:
         if p1in and p2in:
             interior.append([p1,p2])
+        elif p1in:
+            print 'hi' + np.where(np.all(intersection_pairs[:,4:8] == ridge_coords, 1))[0][0]
+
 interior = np.array(interior)
