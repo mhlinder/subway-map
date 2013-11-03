@@ -75,3 +75,5 @@ lines = np.hstack([np.tile(clips.T,voronoi_lines.shape[0]).T, voronoi_lines.T.re
 
 result = intersect(lines[:,0:4], lines[:,4:8])
 result = result.astype(bool)
+
+intersections = lines[result] # lines that intersect
