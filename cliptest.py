@@ -2,20 +2,30 @@ import numpy as np
 from scipy.spatial import Voronoi
 
 def CCW(a,b,c):
-    return np.linalg.det(np.array([ [1, a[0], a[1]],
-                                    [1, b[0], b[1]],
-                                    [1, c[0], c[1]] ]) ) > 0
+    n = np.shape(a)[0]
+    a11 = np.ones(n)
+    a21 = np.ones(n)
+    a31 = np.ones(n)
+    a12 = a[:,0]
+    a13 = a[:,1]
+    a22 = b[:,0]
+    a23 = b[:,1]
+    a32 = c[:,0]
+    a33 = c[:,1]
+
+    det = a11*(a22*a33 - a23*a32) - a12*(a21*a33 - a23*a31) + a13*(a21*a32 - a22*a31)
+    return det > 0
 
 def intersect(l1,l2):
-    x1 = l1[0]
-    y1 = l1[1]
-    x2 = l2[0]
-    y2 = l2[1]
-    if CCW(x1, x2, y2) == CCW(y1, x2, y2):
-        return False
-    elif CCW(x1, y1, x2) == CCW(x1, y1, y2):
-        return False
-    return True
+    n = np.shape(l1)[0]
+    result = np.ones(n)
+    p11 = l1[:,0:2]
+    p12 = l1[:,2:4]
+    p21 = l2[:,0:2]
+    p22 = l2[:,2:4]
+    result[CCW(p11, p21, p22) == CCW(p12, p21, p22)] = 0
+    result[CCW(p11, p12, p21) == CCW(p11, p12, p22)] = 0
+    return result
 
 # points will be both the points for which we calculate a Voronoi diagram, and the basis of our clipping region
 points = np.array([[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 0], [2, 1], [2, 2]])
@@ -56,10 +66,13 @@ clipV = [0, 1, 2, 5, 8, 7, 6, 3, 0]
 clips = points[clipV]
 clips = np.hstack([clips[:-1],clips[1:]])
 
+voronoi_lines = np.hstack([vor.vertices[vor.ridge_vertices][:,0], vor.vertices[vor.ridge_vertices][:,1]])
+
 # combine all path lines with voronoi lines
 # this would do it if a = np.array([1,2,3]): np.transpose([np.tile(a, len(a)), np.repeat(a, len(a))])
 # we change this slightly for our two-dimensional array
-clips = np.hstack([np.tile(clips.T,clips.shape[0]).T, clips.T.repeat(clips.shape[0],1).T])
-# for i in np.arange(1, np.shape(clips)[0]):
-    # print clips[[i-1, i]]
-    # # for j in np.arange(1, np.shape(clips)[0]):
+# clips = np.hstack([np.tile(clips.T,clips.shape[0]).T, clips.T.repeat(clips.shape[0],1).T])
+
+lines = np.hstack([np.tile(clips.T,voronoi_lines.shape[0]).T, voronoi_lines.T.repeat(clips.shape[0],1).T])
+
+result = intersect(lines[:,0:4], lines[:,4:8])
