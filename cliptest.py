@@ -26,6 +26,7 @@ def raycast(p, poly):
 # p = (x1, y1, x2, y2, x3, y3, x4, y4)
 # see http://en.wikipedia.org/wiki/Line-line_intersection
 def intersection(p):
+    # print p
     px = ( (p[:,0]*p[:,3] - p[:,1]*p[:,2])*(p[:,4] - p[:,6]) - (p[:,4]*p[:,7] - p[:,5]*p[:,6])*(p[:,0] - p[:,2]) )  /  ( (p[:,0] - p[:,2])*(p[:,5] - p[:,7]) - (p[:,1] - p[:,3])*(p[:,4] - p[:,6]) )
     py = ( (p[:,0]*p[:,3] - p[:,1]*p[:,2])*(p[:,5] - p[:,7]) - (p[:,4]*p[:,7] - p[:,5]*p[:,6])*(p[:,1] - p[:,3]) )  /  ( (p[:,0] - p[:,2])*(p[:,5] - p[:,7]) - (p[:,1] - p[:,3])*(p[:,4] - p[:,6]) )
     return np.vstack([px,py])
@@ -109,7 +110,7 @@ intersection_pairs = lines[result] # lines that intersect
 intersections = intersection(intersection_pairs)
 intersections = intersections.T
 
-# This doesn't work
+# create list interior, containing all interior ridges--with intersecting segments replaced with a segment only to the intersection
 interior = []
 for ridge in vor.ridge_vertices:
     ridge_coords = vor.vertices[ridge]
@@ -118,10 +119,23 @@ for ridge in vor.ridge_vertices:
     p2 = vor.vertices[ridge[1]]
     p1in = raycast(p1,points[clipV])
     p2in = raycast(p2,points[clipV])
+    # print p1in, p2in
     if p1in or p2in:
+        # print 'at least one'
         if p1in and p2in:
             interior.append([p1,p2])
-        elif p1in:
-            print 'hi' + np.where(np.all(intersection_pairs[:,4:8] == ridge_coords, 1))[0][0]
+        else:
+            a = np.all(intersection_pairs[:,4:8] == np.hstack([p1,p2]), 1)
+            b = np.all(intersection_pairs[:,4:8] == np.hstack([p2,p1]), 1)
+            c = np.vstack([a,b]).T
+            d = np.any(c,1)
+
+            p_new = intersections[np.where(d)[0][0]]
+            if p1in:
+                interior.append([p1,p_new])
+            else:
+                interior.append([p2,p_new])
+    print
 
 interior = np.array(interior)
+# np.all(np.hstack([np.all(intersection_pairs[:,4:8][:,[2,3,0,1]] == ridge_coords,1), np.alluintersection_pairs[:,4:8] == ridge_coords,1)], 1))
