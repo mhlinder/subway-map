@@ -60,6 +60,7 @@ def intersect(l1,l2):
 # points will be both the points for which we calculate a Voronoi diagram, and the basis of our clipping region
 points = np.array([[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 0], [2, 1], [2, 2]])
 vor = Voronoi(points)
+vor_original = Voronoi(points)
 # taken from voronoi.py
 far_points = []
 far_vertices = []
@@ -135,7 +136,9 @@ for ridge in vor.ridge_vertices:
                 interior.append([p1,p_new])
             else:
                 interior.append([p2,p_new])
-    print
-
 interior = np.array(interior)
-# np.all(np.hstack([np.all(intersection_pairs[:,4:8][:,[2,3,0,1]] == ridge_coords,1), np.alluintersection_pairs[:,4:8] == ridge_coords,1)], 1))
+
+voronoi_plot_2d(vor_original)
+plt.plot(points[clipV][:,0], points[clipV][:,1])
+for i in interior:
+    plt.plot(i[:,0], i[:,1], 'r-')
