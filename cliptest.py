@@ -138,6 +138,7 @@ for ridge in vor.ridge_vertices:
                 interior.append([p2,p_new])
 interior = np.array(interior)
 
+# do some plotting
 voronoi_plot_2d(vor_original)
 plt.plot(points[clipV][:,0], points[clipV][:,1])
 for i in interior:
