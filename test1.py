@@ -25,9 +25,11 @@ vor = Voronoi(coords)
 # # find the intersections
 islands = [2, 64, 22, 48, 52, 56, 58]
 clipped = {island: [] for island in islands}
+clips = {island: None for island in islands}
 
 for i in islands:
     clip = Polygon(np.array(city_aea[city_aea['SID'] == i][['X','Y']]))
+    clips[i] = clip
     for region in vor.regions:
         region = np.array(region)
         # the bounding box point regions will be the only ones extending to infinity; true only if no infinite boundaries
@@ -37,3 +39,17 @@ for i in islands:
 
             if clip.intersects(region_polygon):
                 clipped[i].append(clip.intersection(region_polygon))
+
+for i in islands:
+    clip = clips[i]
+    x,y = clip.exterior.xy
+    plt.plot(x,y)
+
+    for polygon in clipped[i]:
+        if polygon.geom_type == 'Polygon':
+            x,y = polygon.exterior.xy
+            plt.plot(x,y)
+        elif polygon.geom_type == 'MultiPolygon':
+            for subpolygon in polygon:
+                x,y = subpolygon.exterior.xy
+                plt.plot(x,y)
