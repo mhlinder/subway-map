@@ -3,6 +3,35 @@ import pandas as pd
 from scipy.spatial import Voronoi, voronoi_plot_2d
 import matplotlib.pyplot as plt
 
+# raycasting adapted from http://geospatialpython.com/2011/01/point-in-polygon.html
+# True if point is in poly; false if not
+def raycast(p, poly):
+    x,y = p[0],p[1]
+    n = poly.shape[0]
+    inside = False
+
+    p1x,p1y = poly[0]
+    for i in range(n+1):
+        p2x,p2y = poly[i % n]
+        if y > min(p1y,p2y):
+            if y <= max(p1y,p2y):
+                if x <= max(p1x,p2x):
+                    if p1y != p2y:
+                        xints = (y-p1y)*(p2x-p1x)/(p2y-p1y)+p1x
+                    if p1x == p2x or x <= xints:
+                        inside = not inside
+        p1x,p1y = p2x,p2y
+
+    return inside
+
+# p = (x1, y1, x2, y2, x3, y3, x4, y4)
+# see http://en.wikipedia.org/wiki/Line-line_intersection
+def intersection(p):
+    # print p
+    px = ( (p[:,0]*p[:,3] - p[:,1]*p[:,2])*(p[:,4] - p[:,6]) - (p[:,4]*p[:,7] - p[:,5]*p[:,6])*(p[:,0] - p[:,2]) )  /  ( (p[:,0] - p[:,2])*(p[:,5] - p[:,7]) - (p[:,1] - p[:,3])*(p[:,4] - p[:,6]) )
+    py = ( (p[:,0]*p[:,3] - p[:,1]*p[:,2])*(p[:,5] - p[:,7]) - (p[:,4]*p[:,7] - p[:,5]*p[:,6])*(p[:,1] - p[:,3]) )  /  ( (p[:,0] - p[:,2])*(p[:,5] - p[:,7]) - (p[:,1] - p[:,3])*(p[:,4] - p[:,6]) )
+    return np.vstack([px,py])
+
 def CCW(a,b,c):
     n = np.shape(a)[0]
     a11 = np.ones(n)
@@ -103,5 +132,44 @@ for i in islands:
     result = intersect(lines[:,0:4], lines[:,4:8])
     result = result.astype(bool)
     results.append(result)
+    print 'first'
 
     # intersections = lines[result] # lines that intersect
+    intersection_pairs = lines[result] # lines that intersect
+    intersections = intersection(intersection_pairs)
+    intersections = intersections.T
+
+    print 'clip'
+# create list interior, containing all interior ridges--with intersecting segments replaced with a segment only to the intersection
+    interior = []
+    for ridge in vor.ridge_vertices:
+        ridge_coords = vor.vertices[ridge]
+        ridge_coords = np.hstack([ridge_coords[:,0], ridge_coords[:,1]])
+        p1 = vor.vertices[ridge[0]]
+        p2 = vor.vertices[ridge[1]]
+        p1in = raycast(p1,points[clipV])
+        p2in = raycast(p2,points[clipV])
+        # print p1in, p2in
+        if p1in or p2in:
+            # print 'at least one'
+            if p1in and p2in:
+                interior.append([p1,p2])
+            else:
+                a = np.all(intersection_pairs[:,4:8] == np.hstack([p1,p2]), 1)
+                b = np.all(intersection_pairs[:,4:8] == np.hstack([p2,p1]), 1)
+                c = np.vstack([a,b]).T
+                d = np.any(c,1)
+
+                p_new = intersections[np.where(d)[0][0]]
+                if p1in:
+                    interior.append([p1,p_new])
+                else:
+                    interior.append([p2,p_new])
+    interior = np.array(interior)
+    print
+
+# do some plotting
+    voronoi_plot_2d(vor_original)
+    plt.plot(points[clipV][:,0], points[clipV][:,1])
+    for i in interior:
+        plt.plot(i[:,0], i[:,1], 'r-')
