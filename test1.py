@@ -1,10 +1,9 @@
 import numpy as np
 import pandas as pd
 from scipy.spatial import Voronoi
-from shapely.geometry import Polygon
+from shapely.geometry import Polygon, MultiPolygon
 
 import matplotlib.pyplot as plt
-from scipy.spatial import voronoi_plot_2d
 
 stops_aea = pd.read_csv('output/stops_aea')
 city_aea = pd.read_csv('output/city_aea')
@@ -24,32 +23,46 @@ vor = Voronoi(coords)
 
 # # find the intersections
 islands = [2, 64, 22, 48, 52, 56, 58]
-clipped = {island: [] for island in islands}
-clips = {island: None for island in islands}
+clips = []
+clipped = []
 
+# Create a collection of polygons for the boundary of New York City
 for i in islands:
     clip = Polygon(np.array(city_aea[city_aea['SID'] == i][['X','Y']]))
-    clips[i] = clip
-    for region in vor.regions:
-        region = np.array(region)
-        # the bounding box point regions will be the only ones extending to infinity; true only if no infinite boundaries
-        if region.shape[0] and np.all(region >= 0):
-            region_vertices = vor.vertices[region]
-            region_polygon = Polygon(region_vertices)
+    clips.append(clip)
+clips = MultiPolygon(clips)
+# create a list of clipped polygons---only non-infinite regions,
+for region in vor.regions:
+    region = np.array(region)
+    # the bounding box point regions will be the only ones extending to infinity
+    if region.shape[0] and np.all(region >= 0):
+        region_vertices = vor.vertices[region]
+        region_polygon = Polygon(region_vertices)
 
-            if clip.intersects(region_polygon):
-                clipped[i].append(clip.intersection(region_polygon))
+        if clips.intersects(region_polygon):
+            clipped.append(clips.intersection(region_polygon))
 
-for i in islands:
-    clip = clips[i]
-    x,y = clip.exterior.xy
-    plt.plot(x,y)
 
-    for polygon in clipped[i]:
-        if polygon.geom_type == 'Polygon':
-            x,y = polygon.exterior.xy
-            plt.plot(x,y)
-        elif polygon.geom_type == 'MultiPolygon':
-            for subpolygon in polygon:
-                x,y = subpolygon.exterior.xy
-                plt.plot(x,y)
+# # Plotting
+GRAY = '#999999'
+BLACK = '#000000'
+def plot_border(ax, ob):
+    x, y = ob.xy
+    ax.plot(x, y, color=BLACK, linewidth=3, solid_capstyle='round', zorder=2)
+
+def plot_line(ax, ob):
+    x, y = ob.xy
+    ax.plot(x, y, color=GRAY, linewidth=3, solid_capstyle='round', zorder=1)
+
+fig = plt.figure(1)
+ax = fig.add_subplot(111)
+
+for polygon in clipped:
+    if polygon.geom_type == 'Polygon':
+        plot_line(ax, polygon.exterior)
+    elif polygon.geom_type == 'MultiPolygon':
+        for subpolygon in polygon:
+            plot_line(ax, subpolygon.exterior)
+
+for clip in clips:
+    plot_border(ax,clip.exterior)
