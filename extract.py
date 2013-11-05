@@ -11,7 +11,7 @@ with fiona.open('indata/nybb_13a/nybb.shp') as source:
     # lat/lon, using WGS84; Albers Equal Area
     p1 = Proj(source.crs,preserve_units=True)
     p2 = Proj({'proj':'longlat', 'datum':'WGS84'})
-    p3 = Proj({'proj':'aea', 'datum':'WGS84', 'lon_0':'-96')
+    p3 = Proj({'proj':'aea', 'datum':'WGS84', 'lon_0':'-96'})
 
     # for each shape, convert its coordinates to AEA
     for shape in source:
@@ -25,3 +25,15 @@ with fiona.open('indata/nybb_13a/nybb.shp') as source:
             shapes.append(Polygon(p3_points))
 
 shapes = MultiPolygon(shapes)
+i = 0
+for shape in shapes:
+    x,y = shape.exterior.xy
+    plt.plot(x,y)
+
+    bounds = np.array(shape.bounds)
+    bounds = bounds.reshape([2,2])
+    cx = np.mean(bounds[:,0])
+    cy = np.mean(bounds[:,1])
+
+    plt.text(cx,cy,str(i))
+    i = i+1
