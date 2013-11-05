@@ -5,7 +5,6 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-shapes = []
 with fiona.open('indata/nybb_13a/nybb.shp') as source:
     # set up three projection types: boundary data start; google-standard
     # lat/lon, using WGS84; Albers Equal Area
@@ -26,8 +25,10 @@ with fiona.open('indata/nybb_13a/nybb.shp') as source:
             new = Polygon(p3_points)
             nyc = nyc.union(new)
 
+# there
+
 i = 0
-for shape in shapes:
+for shape in nyc:
     x,y = shape.exterior.xy
     plt.plot(x,y)
 
