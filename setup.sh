@@ -2,8 +2,6 @@
 # Initialize directory structure for SubwayMap project
 
 mkdir indata
-mkdir output
-
 cd indata
 
 # http://www.nyc.gov/html/dcp/html/bytes/dwndistricts.shtml
