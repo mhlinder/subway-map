@@ -2,7 +2,8 @@
 # Calculate a Voronoi tesselation of New York City's subway system
 import fiona
 import numpy as np
-import pandas as pd
+from pandas import read_csv
+from geopandas import GeoDataFrame, GeoSeries
 from pyproj import Proj, transform
 from shapely.geometry import Polygon, MultiPolygon
 from scipy.spatial import Voronoi
@@ -59,7 +60,7 @@ nyc = MultiPolygon(boundary)
 
 
 # # Subway stops data
-stops = pd.read_csv('indata/google_transit/stops.txt')
+stops = read_csv('indata/google_transit/stops.txt')
 stops = stops[stops['location_type']==1]
 
 # this still results in 4 dupes; remove each by hand
@@ -71,9 +72,13 @@ stops = stops[stops['stop_id']!='N12']
 stops_pts = np.array(stops[['stop_lon','stop_lat']])
 stops_pts = transform(p2, p3, stops_pts[:,0], stops_pts[:,1])
 stops_pts = np.vstack([stops_pts[0], stops_pts[1]]).T
+# save aea-projected location
+stops['x'] = stops_pts[:,0]
+stops['y'] = stops_pts[:,1]
 
-# calculate voronoi diagram
-# calculate a bounding box to restrict the diagram
+# calculate voronoi diagram:
+
+# first, calculate a bounding box to restrict the diagram
 min_x = min(stops_pts[:,0]) - 5000
 max_x = max(stops_pts[:,0]) + 5000
 min_y = min(stops_pts[:,1]) - 5000
@@ -84,17 +89,22 @@ bbox = np.array([[min_x,min_y], [max_x,max_y], [min_x,max_y], [max_x,min_y]])
 coords = np.vstack([stops_pts, bbox])
 vor = Voronoi(coords)
 
-# rearrange, so the last four are the bbox dummy observations, and remove
+# rearrange, so that regions are in the same order as their corresponding
+# points, so the last four are the bbox dummy observations, and remove them
 regions = np.array(vor.regions)[vor.point_region]
 regions = regions[:-4]
 clipped = []
-for region in vor.regions:
+for region in regions:
     region_vertices = vor.vertices[region]
     region_polygon = Polygon(region_vertices)
 
     if nyc.intersects(region_polygon):
         clipped.append(nyc.intersection(region_polygon))
 
+clipped = GeoSeries(clipped)
+stops = GeoDataFrame(stops)
+stops.index = np.arange(stops.shape[0])
+stops['geometry'] = clipped
 
 # # Plotting
 # GRAY = '#999999'
