@@ -52,7 +52,8 @@ def plot_border(ax, ob):
 
 def plot_line(ax, ob):
     x, y = ob.xy
-    ax.plot(x, y, color=GRAY, linewidth=3, solid_capstyle='round', zorder=1)
+    # ax.plot(x, y, color=GRAY, linewidth=3, solid_capstyle='round', zorder=1)
+    ax.plot(x, y, linewidth=1, solid_capstyle='round', zorder=1)
 
 fig = plt.figure(1)
 ax = fig.add_subplot(111)
@@ -64,5 +65,5 @@ for polygon in clipped:
         for subpolygon in polygon:
             plot_line(ax, subpolygon.exterior)
 
-for clip in clips:
-    plot_border(ax,clip.exterior)
+# for clip in clips:
+    # plot_border(ax,clip.exterior)
