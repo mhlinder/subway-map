@@ -5,6 +5,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+
+# # NYC boundary data
 with fiona.open('indata/nybb_13a/nybb.shp') as source:
     # set up three projection types: boundary data start; google-standard
     # lat/lon, using WGS84; Albers Equal Area
@@ -51,3 +53,14 @@ boundary = []
 for i in indices:
     boundary.append(nyc[i])
 boundary = MultiPolygon(boundary)
+
+
+# # Subway stops data
+stops = pd.read_csv('indata/google_transit/stops.txt')
+stops = stops[stops['location_type']==1]
+
+stops_pts = np.array(stops[['stop_lon','stop_lat']])
+stops_pts = transform(p2, p3, stops_pts[:,0], stops_pts[:,1])
+stops_pts = np.vstack([stops_pts[0], stops_pts[1]]).T
+
+
