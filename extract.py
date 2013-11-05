@@ -1,3 +1,5 @@
+# M. Henry Linder, November 2013
+# Calculate a Voronoi tesselation of New York City's subway system
 import fiona
 import numpy as np
 import pandas as pd
