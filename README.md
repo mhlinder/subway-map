@@ -1,13 +1,13 @@
 NYC Subway Voronoi
 =================
-Requires:
+Required Python libraries:
 * **fiona** (read OGR)
-* numpy (array, data manipulation)
-* pandas (data manipulation)
-* geopandas (extend pandas for spatial data)
-* pyproj (transform map projections)
-* shapely (geometric objects)
-* scipy (Voronoi)
-* matplotlib (plotting)
+* **geopandas** (extend `pandas` for spatial data)
+* **matplotlib** (plotting)
+* **numpy** (array, data manipulation)
+* **pandas** (data manipulation)
+* **pyproj** (transform map projections)
+* **scipy** (Voronoi)
+* **shapely** (geometric objects)
 
 Run `setup.py` to obtain data; running `voronoi.py` will kick everything off.
