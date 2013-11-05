@@ -1,7 +1,7 @@
 NYC Subway Voronoi
 =================
 Requires:
-* fiona (read OGR)
+* **fiona** (read OGR)
 * numpy (array, data manipulation)
 * pandas (data manipulation)
 * geopandas (extend pandas for spatial data)
