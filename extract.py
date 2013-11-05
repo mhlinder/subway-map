@@ -62,6 +62,12 @@ nyc = MultiPolygon(boundary)
 stops = pd.read_csv('indata/google_transit/stops.txt')
 stops = stops[stops['location_type']==1]
 
+# this still results in 4 dupes; remove each by hand
+stops = stops[stops['stop_id']!='718']
+stops = stops[stops['stop_id']!='A12']
+stops = stops[stops['stop_id']!='A32']
+stops = stops[stops['stop_id']!='N12']
+
 stops_pts = np.array(stops[['stop_lon','stop_lat']])
 stops_pts = transform(p2, p3, stops_pts[:,0], stops_pts[:,1])
 stops_pts = np.vstack([stops_pts[0], stops_pts[1]]).T
@@ -78,38 +84,40 @@ bbox = np.array([[min_x,min_y], [max_x,max_y], [min_x,max_y], [max_x,min_y]])
 coords = np.vstack([stops_pts, bbox])
 vor = Voronoi(coords)
 
+# rearrange, so the last four are the bbox dummy observations, and remove
+regions = np.array(vor.regions)[vor.point_region]
+regions = regions[:-4]
 clipped = []
 for region in vor.regions:
-    region = np.array(region)
-    if region.shape[0] and np.all(region >= 0):
-        region_vertices = vor.vertices[region]
-        region_polygon = Polygon(region_vertices)
+    region_vertices = vor.vertices[region]
+    region_polygon = Polygon(region_vertices)
 
-        if nyc.intersects(region_polygon):
-            clipped.append(nyc.intersection(region_polygon))
+    if nyc.intersects(region_polygon):
+        clipped.append(nyc.intersection(region_polygon))
 
 
 # # Plotting
-GRAY = '#999999'
-BLACK = '#000000'
-def plot_border(ax, ob):
-    x, y = ob.xy
-    ax.plot(x, y, color=BLACK, linewidth=3, solid_capstyle='round', zorder=2)
+# GRAY = '#999999'
+# BLACK = '#000000'
+# def plot_border(ax, ob):
+    # x, y = ob.xy
+    # # ax.plot(x, y, color=BLACK, linewidth=3, solid_capstyle='round', zorder=2)
+    # ax.plot(x, y, color=BLACK, linewidth=1, solid_capstyle='round', zorder=2)
 
-def plot_line(ax, ob):
-    x, y = ob.xy
-    # ax.plot(x, y, color=GRAY, linewidth=3, solid_capstyle='round', zorder=1)
-    ax.plot(x, y, linewidth=1, solid_capstyle='round', zorder=1)
+# def plot_line(ax, ob):
+    # x, y = ob.xy
+    # # ax.plot(x, y, color=GRAY, linewidth=3, solid_capstyle='round', zorder=1)
+    # ax.plot(x, y, linewidth=1, solid_capstyle='round', zorder=1)
 
-fig = plt.figure(1)
-ax = fig.add_subplot(111)
+# fig = plt.figure(1)
+# ax = fig.add_subplot(111)
 
-for polygon in clipped:
-    if polygon.geom_type == 'Polygon':
-        plot_line(ax, polygon.exterior)
-    elif polygon.geom_type == 'MultiPolygon':
-        for subpolygon in polygon:
-            plot_line(ax, subpolygon.exterior)
+# for polygon in clipped:
+    # if polygon.geom_type == 'Polygon':
+        # plot_line(ax, polygon.exterior)
+    # elif polygon.geom_type == 'MultiPolygon':
+        # for subpolygon in polygon:
+            # plot_line(ax, subpolygon.exterior)
 
 # for clip in clips:
     # plot_border(ax,clip.exterior)
