@@ -1,5 +1,6 @@
 indata/
-output/
 *.swp
 .DS*
 reference
+Old/
+*.p
