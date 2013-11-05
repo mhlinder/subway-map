@@ -7,7 +7,8 @@ from geopandas import GeoDataFrame, GeoSeries
 from pyproj import Proj, transform
 from shapely.geometry import Polygon, MultiPolygon
 from scipy.spatial import Voronoi
-import matplotlib.pyplot as plt
+
+import pickle
 
 
 # # NYC boundary data
@@ -104,30 +105,7 @@ for region in regions:
 clipped = GeoSeries(clipped)
 stops = GeoDataFrame(stops)
 stops.index = np.arange(stops.shape[0])
-stops['geometry'] = clipped
+stops['region'] = clipped
 
-# # Plotting
-# GRAY = '#999999'
-# BLACK = '#000000'
-# def plot_border(ax, ob):
-    # x, y = ob.xy
-    # # ax.plot(x, y, color=BLACK, linewidth=3, solid_capstyle='round', zorder=2)
-    # ax.plot(x, y, color=BLACK, linewidth=1, solid_capstyle='round', zorder=2)
-
-# def plot_line(ax, ob):
-    # x, y = ob.xy
-    # # ax.plot(x, y, color=GRAY, linewidth=3, solid_capstyle='round', zorder=1)
-    # ax.plot(x, y, linewidth=1, solid_capstyle='round', zorder=1)
-
-# fig = plt.figure(1)
-# ax = fig.add_subplot(111)
-
-# for polygon in clipped:
-    # if polygon.geom_type == 'Polygon':
-        # plot_line(ax, polygon.exterior)
-    # elif polygon.geom_type == 'MultiPolygon':
-        # for subpolygon in polygon:
-            # plot_line(ax, subpolygon.exterior)
-
-# for clip in clips:
-    # plot_border(ax,clip.exterior)
+pickle.dump(stops,open('save/stops.p','wb'))
+pickle.dump(nyc,open('save/nyc.p','wb'))
