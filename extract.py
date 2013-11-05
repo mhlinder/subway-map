@@ -1,8 +1,9 @@
 import fiona
-from pyproj import Proj, transform
-from shapely.geometry import Polygon, MultiPolygon
 import numpy as np
 import pandas as pd
+from pyproj import Proj, transform
+from shapely.geometry import Polygon, MultiPolygon
+from scipy.spatial import Voronoi
 import matplotlib.pyplot as plt
 
 
@@ -52,7 +53,7 @@ indices = [3, 39, 36, 40, 10, 14, 15]
 boundary = []
 for i in indices:
     boundary.append(nyc[i])
-boundary = MultiPolygon(boundary)
+nyc = MultiPolygon(boundary)
 
 
 # # Subway stops data
@@ -63,4 +64,50 @@ stops_pts = np.array(stops[['stop_lon','stop_lat']])
 stops_pts = transform(p2, p3, stops_pts[:,0], stops_pts[:,1])
 stops_pts = np.vstack([stops_pts[0], stops_pts[1]]).T
 
+# calculate voronoi diagram
+# calculate a bounding box to restrict the diagram
+min_x = min(stops_pts[:,0]) - 5000
+max_x = max(stops_pts[:,0]) + 5000
+min_y = min(stops_pts[:,1]) - 5000
+max_y = max(stops_pts[:,1]) + 5000
+bbox = np.array([[min_x,min_y], [max_x,max_y], [min_x,max_y], [max_x,min_y]])
 
+# find the voronoi
+coords = np.vstack([stops_pts, bbox])
+vor = Voronoi(coords)
+
+clipped = []
+for region in vor.regions:
+    region = np.array(region)
+    if region.shape[0] and np.all(region >= 0):
+        region_vertices = vor.vertices[region]
+        region_polygon = Polygon(region_vertices)
+
+        if nyc.intersects(region_polygon):
+            clipped.append(nyc.intersection(region_polygon))
+
+
+# # Plotting
+GRAY = '#999999'
+BLACK = '#000000'
+def plot_border(ax, ob):
+    x, y = ob.xy
+    ax.plot(x, y, color=BLACK, linewidth=3, solid_capstyle='round', zorder=2)
+
+def plot_line(ax, ob):
+    x, y = ob.xy
+    # ax.plot(x, y, color=GRAY, linewidth=3, solid_capstyle='round', zorder=1)
+    ax.plot(x, y, linewidth=1, solid_capstyle='round', zorder=1)
+
+fig = plt.figure(1)
+ax = fig.add_subplot(111)
+
+for polygon in clipped:
+    if polygon.geom_type == 'Polygon':
+        plot_line(ax, polygon.exterior)
+    elif polygon.geom_type == 'MultiPolygon':
+        for subpolygon in polygon:
+            plot_line(ax, subpolygon.exterior)
+
+# for clip in clips:
+    # plot_border(ax,clip.exterior)

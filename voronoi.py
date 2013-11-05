@@ -65,5 +65,5 @@ for polygon in clipped:
         for subpolygon in polygon:
             plot_line(ax, subpolygon.exterior)
 
-# for clip in clips:
-    # plot_border(ax,clip.exterior)
+for clip in clips:
+    plot_border(ax,clip.exterior)
