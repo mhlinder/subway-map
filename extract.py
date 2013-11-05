@@ -14,6 +14,7 @@ with fiona.open('indata/nybb_13a/nybb.shp') as source:
     p3 = Proj({'proj':'aea', 'datum':'WGS84', 'lon_0':'-96'})
 
     # for each shape, convert its coordinates to AEA
+    nyc = MultiPolygon()
     for shape in source:
         for subshape in shape['geometry']['coordinates']:
             p1_points = np.array(subshape[0])
@@ -22,9 +23,9 @@ with fiona.open('indata/nybb_13a/nybb.shp') as source:
             p3_points = transform(p2, p3, p2_points[0], p2_points[1])
             p3_points = np.vstack([p3_points[0], p3_points[1]]).T
 
-            shapes.append(Polygon(p3_points))
+            new = Polygon(p3_points)
+            nyc = nyc.union(new)
 
-shapes = MultiPolygon(shapes)
 i = 0
 for shape in shapes:
     x,y = shape.exterior.xy
