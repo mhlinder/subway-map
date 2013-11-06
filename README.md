@@ -12,5 +12,3 @@ Required Python libraries:
 * **pyproj** (transform map projections)
 * **scipy** (Voronoi)
 * **shapely** (geometric objects)
-
-Run `setup.py` to obtain data; running `voronoi.py` will kick everything off.
