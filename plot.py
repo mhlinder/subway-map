@@ -24,8 +24,11 @@ for i in np.arange(stops.shape[0]):
 # Plotting
 
 # # This is a choropleth according to area
-fig = plt.figure(1)
+fig = plt.figure(1,dpi=360)
 ax = fig.add_subplot(111)
+
+fig.set_size_inches(24,24)
+ax.axis('off')
 
 area_measure = 'v_larea'
 # calculate percentiles for binning area
@@ -59,3 +62,6 @@ for row in stops.iterrows():
 for clip in nyc:
     plot_border(ax,clip.exterior)
 
+# plt.scatter(stops['x'].values,stops['y'].values,c='k',zorder=2)
+
+plt.savefig('save/choropleth.png')
