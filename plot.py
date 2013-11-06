@@ -24,7 +24,7 @@ for i in np.arange(stops.shape[0]):
 # Plotting
 
 # # This is a choropleth according to area
-fig = plt.figure(1,dpi=360)
+fig = plt.figure(1,dpi=360,frameon=False)
 ax = fig.add_subplot(111)
 
 fig.set_size_inches(24,24)
