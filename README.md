@@ -1,5 +1,8 @@
 NYC Subway Voronoi
 =================
+![area
+choropleth](https://raw.github.com/mhlinder/subway-map/master/save/choropleth.png)
+
 Required Python libraries:
 * **fiona** (read OGR)
 * **geopandas** (extend `pandas` for `shapely` data)
