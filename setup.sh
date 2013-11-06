@@ -14,4 +14,9 @@ wget http://www.mta.info/developers/data/nyct/subway/google_transit.zip
 unzip google_transit.zip
 rm google_transit.zip
 
-cd ..
+mkdir mta
+cd mta/
+wget http://www.mta.info/developers/data/nyct/subway/StationEntrances.csv
+wget http://www.mta.info/developers/resources/nyct/subway/StationEntranceDefinitions.csv
+
+cd ../..
