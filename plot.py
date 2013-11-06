@@ -4,21 +4,12 @@ from geopandas import GeoDataFrame, GeoSeries
 from descartes import PolygonPatch
 import numpy as np
 
-def plot_border(ax, ob):
-    x, y = ob.xy
-    ax.plot(x, y, color="#000000", linewidth=1, zorder=2)
-def plot_line(ax, ob):
-    x, y = ob.xy
-    ax.plot(x, y, linewidth=1, zorder=1)
-
 stops = pickle.load(open('save/stops.p','rb'))
 nyc = pickle.load(open('save/nyc.p','rb'))
 
-
 # Plotting
-
 # # This is a choropleth according to area
-fig = plt.figure(1,dpi=360,frameon=False)
+fig = plt.figure(1,dpi=540,frameon=False)
 ax = fig.add_subplot(111)
 
 fig.set_size_inches(24,24)
@@ -37,6 +28,7 @@ for row in stops.iterrows():
     row = row[1]
     polygon = row['region']
 
+    # plot region
     # find index of bin for coloring
     comparison = row[area_measure] <= qs
     if np.all(comparison):
@@ -47,14 +39,13 @@ for row in stops.iterrows():
 
     if polygon.geom_type == 'Polygon':
         ax.add_patch(PolygonPatch(polygon,facecolor=c,edgecolor="#000000"))
-        # plot_line(ax, polygon.exterior)
     elif polygon.geom_type == 'MultiPolygon':
         for subpolygon in polygon:
             ax.add_patch(PolygonPatch(subpolygon,facecolor=c,edgecolor="#000000"))
-            # plot_line(ax, subpolygon.exterior)
 
 for clip in nyc:
-    plot_border(ax,clip.exterior)
+    x, y = clip.exterior.xy
+    ax.plot(x, y, color="#000000", linewidth=1, zorder=2)
 
 # plt.scatter(stops['x'].values,stops['y'].values,c='k',zorder=2)
 
