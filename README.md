@@ -1,5 +1,5 @@
-NYC Subway Voronoi
-=================
+NYC Subway Station Voronoi
+==========================
 ![area
 choropleth](https://raw.github.com/mhlinder/subway-map/master/save/choropleth.png)
 
