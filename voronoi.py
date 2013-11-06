@@ -102,10 +102,18 @@ for region in regions:
     if nyc.intersects(region_polygon):
         clipped.append(nyc.intersection(region_polygon))
 
+# add clipped regions to dataframe
 clipped = GeoSeries(clipped)
 stops = GeoDataFrame(stops)
 stops.index = np.arange(stops.shape[0])
 stops['region'] = clipped
+
+# calculate area of each region
+stops['v_area'] = GeoSeries(index=np.arange(stops.shape[0]))
+stops['v_larea'] = GeoSeries(index=np.arange(stops.shape[0]))
+for i in np.arange(stops.shape[0]):
+    stops['v_area'].ix[i] = stops.ix[i]['region'].area
+    stops['v_larea'].ix[i] = np.log(stops.ix[i]['v_area'])
 
 pickle.dump(stops,open('save/stops.p','wb'))
 pickle.dump(nyc,open('save/nyc.p','wb'))

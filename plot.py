@@ -6,19 +6,13 @@ import numpy as np
 
 def plot_border(ax, ob):
     x, y = ob.xy
-    ax.plot(x, y, color="#000000", linewidth=1, solid_capstyle='round', zorder=2)
+    ax.plot(x, y, color="#000000", linewidth=1, zorder=2)
 def plot_line(ax, ob):
     x, y = ob.xy
-    ax.plot(x, y, linewidth=1, solid_capstyle='round', zorder=1)
+    ax.plot(x, y, linewidth=1, zorder=1)
+
 stops = pickle.load(open('save/stops.p','rb'))
 nyc = pickle.load(open('save/nyc.p','rb'))
-
-
-stops['v_area'] = GeoSeries(index=np.arange(stops.shape[0]))
-stops['v_larea'] = GeoSeries(index=np.arange(stops.shape[0]))
-for i in np.arange(stops.shape[0]):
-    stops['v_area'].ix[i] = stops.ix[i]['region'].area
-    stops['v_larea'].ix[i] = np.log(stops.ix[i]['v_area'])
 
 
 # Plotting
