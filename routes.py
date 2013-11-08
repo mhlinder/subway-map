@@ -14,7 +14,7 @@ stops = stops[stops['location_type']==1]
 
 staten_island = ['St George','Tompkinsville','Stapleton','Clifton','Grasmere','Old Town','Dongan Hills','Jefferson Av','Grant City','New Dorp','Oakwood Heights','Bay Terrace','Great Kills','Eltingville','Annadale','Huguenot',"Prince's Bay",'Pleasant Plains','Richmond Valley','Nassau','Atlantic','Tottenville']
 subway = [stop in staten_island for stop in stops['stop_name']]
-si_ids = stops[subway]['stop_id'].tolist()
+si_ids = stops[subway]['stop_id'].tolist() # keep ids of SI for later filtering
 subway = [stop not in staten_island for stop in stops['stop_name']]
 stops = stops[subway]
 stops.index = range(len(stops))
@@ -42,4 +42,19 @@ for node in system.nodes():
     stop = stops[stops['stop_id']==node].iloc[0]
     locs[node] = stop[['x','y']].values
 
-nx.draw(system,locs)
+
+nyc = pickle.load(open('save/nyc.p','rb'))
+
+for clip in nyc:
+    x,y = clip.exterior.xy
+    plt.plot(x,y,'k-')
+
+for node in system.nodes():
+    x,y = locs[node]
+    plt.scatter(x,y,marker='.',c='r')
+
+for edge in system.edges():
+    a,b = edge
+    x1,y1 = locs[a]
+    x2,y2 = locs[b]
+    plt.plot((x1,x2),(y1,y2),'r-')
