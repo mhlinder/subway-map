@@ -16,7 +16,7 @@ staten_island = ['St George','Tompkinsville','Stapleton','Clifton','Grasmere','O
 subway = [stop in staten_island for stop in stops['stop_name']]
 si_ids = stops[subway]['stop_id'].tolist() # keep ids of SI for later filtering
 subway = [stop not in staten_island for stop in stops['stop_name']]
-stops = stops[subway]
+# stops = stops[subway]
 stops.index = range(len(stops))
 
 x = stops['stop_lon']
@@ -28,12 +28,12 @@ stops['y'] = y
 
 system = nx.Graph()
 for pair in unique_routes.keys():
-    if pair[0] not in si_ids and pair[1] not in si_ids:
-        for route in unique_routes[pair]:
-            route = np.array(route)
-            edges = np.vstack([route[:-1], route[1:]]).T
-            system.add_nodes_from(route)
-            system.add_edges_from(edges)
+    # if pair[0] not in si_ids and pair[1] not in si_ids:
+    for route in unique_routes[pair]:
+        route = np.array(route)
+        edges = np.vstack([route[:-1], route[1:]]).T
+        system.add_nodes_from(route)
+        system.add_edges_from(edges)
 
 # find location of each node as subway stop
 locs = {node:None for node in system.nodes()}
@@ -41,6 +41,13 @@ stop_id = stops['stop_id'].tolist()
 for node in system.nodes():
     stop = stops[stops['stop_id']==node].iloc[0]
     locs[node] = stop[['x','y']].values
+
+# rudimentary incorporation of transfers--just another edge
+transfers = pd.read_csv('indata/google_transit/transfers.txt')
+for i in range(len(transfers)):
+    transfer = transfers.iloc[i]
+    if transfer['from_stop_id'] != transfer['to_stop_id']:
+        system.add_edge(transfer['from_stop_id'], transfer['to_stop_id'])
 
 
 nyc = pickle.load(open('save/nyc.p','rb'))
