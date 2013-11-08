@@ -53,7 +53,8 @@ with fiona.open('indata/nybb_13a/nybb.shp') as source:
 #   5.  10  brooklyn / queens  rockaways
 #   6.  14  brooklyn / queens  jamaica bay wildlife refuge / broad channel
 #   7.  15  brooklyn / queens  brooklyn / queens
-indices = [3, 39, 36, 40, 10, 14, 15]
+# indices = [3, 39, 36, 40, 10, 14, 15]
+indices = [39, 36, 40, 10, 14, 15]
 boundary = []
 for i in indices:
     boundary.append(nyc[i])
@@ -63,6 +64,12 @@ nyc = MultiPolygon(boundary)
 # # Subway stops data
 stops = read_csv('indata/google_transit/stops.txt')
 stops = stops[stops['location_type']==1]
+# staten island is technically the staten island railroad, NOT part of the
+# subway system
+staten_island = ['St George','Tompkinsville','Stapleton','Clifton','Grasmere','Old Town','Dongan Hills','Jefferson Av','Grant City','New Dorp','Oakwood Heights','Bay Terrace','Great Kills','Eltingville','Annadale','Huguenot',"Prince's Bay",'Pleasant Plains','Richmond Valley','Nassau','Atlantic','Tottenville']
+subway = [stop not in staten_island for stop in stops['stop_name']]
+stops = stops[subway]
+stops.index = range(len(stops))
 
 # this still results in 4 dupes; remove each by hand
 stops = stops[stops['stop_id']!='718']
