@@ -10,6 +10,14 @@ p2 = Proj({'proj':'aea', 'datum':'WGS84', 'lon_0':'-96'})
 
 unique_routes = pickle.load(open('save/unique_routes.p','rb'))
 stops = pd.read_csv('indata/google_transit/stops.txt')
+stops = stops[stops['location_type']==1]
+
+staten_island = ['St George','Tompkinsville','Stapleton','Clifton','Grasmere','Old Town','Dongan Hills','Jefferson Av','Grant City','New Dorp','Oakwood Heights','Bay Terrace','Great Kills','Eltingville','Annadale','Huguenot',"Prince's Bay",'Pleasant Plains','Richmond Valley','Nassau','Atlantic','Tottenville']
+subway = [stop in staten_island for stop in stops['stop_name']]
+si_ids = stops[subway]['stop_id'].tolist()
+subway = [stop not in staten_island for stop in stops['stop_name']]
+stops = stops[subway]
+stops.index = range(len(stops))
 
 x = stops['stop_lon']
 y = stops['stop_lat']
@@ -18,14 +26,14 @@ x,y = aea
 stops['x'] = x
 stops['y'] = y
 
-# need to remove staten island
 system = nx.Graph()
 for pair in unique_routes.keys():
-    for route in unique_routes[pair]:
-        route = np.array(route)
-        edges = np.vstack([route[:-1], route[1:]]).T
-        system.add_nodes_from(route)
-        system.add_edges_from(edges)
+    if pair[0] not in si_ids and pair[1] not in si_ids:
+        for route in unique_routes[pair]:
+            route = np.array(route)
+            edges = np.vstack([route[:-1], route[1:]]).T
+            system.add_nodes_from(route)
+            system.add_edges_from(edges)
 
 # find location of each node as subway stop
 locs = {node:None for node in system.nodes()}
