@@ -49,4 +49,19 @@ for start in routes.keys():
         if route not in unique_routes[pair]:
             unique_routes[pair].append(route)
 
+# remove north/south distinction; just use first three letters in stop names
+unique_routes_new = {}
+for pair in unique_routes.keys():
+    start = pair[0][:3]
+    end = pair[1][:3]
+    pair_new = (start,end)
+    unique_routes_new[pair_new] = []
+    for route in unique_routes[pair]:
+        route_new = []
+        for stop in route:
+            stop = stop[:3]
+            route_new.append(stop)
+        unique_routes_new[pair_new].append(route_new)
+unique_routes = unique_routes_new
+
 pickle.dump(unique_routes,open('save/unique_routes.p','wb'))
