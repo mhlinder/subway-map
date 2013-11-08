@@ -1,3 +1,4 @@
+import pickle
 import pandas as pd
 import numpy as np
 
@@ -47,3 +48,5 @@ for start in routes.keys():
         pair = (start,end)
         if route not in unique_routes[pair]:
             unique_routes[pair].append(route)
+
+pickle.dump(unique_routes,open('save/unique_routes.p','wb'))
