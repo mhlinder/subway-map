@@ -1,3 +1,5 @@
+# identify all midmorning, weekday trips of the subway; this is the benchmark
+# for what trips are available.
 import pickle
 import pandas as pd
 import numpy as np

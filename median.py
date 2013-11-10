@@ -1,3 +1,4 @@
+# match median household income to census tract
 import fiona
 import numpy as np
 from pandas import read_csv
@@ -5,6 +6,7 @@ from pyproj import Proj, transform
 from shapely.geometry import Polygon
 from geopandas import GeoDataFrame
 
+# read in census income data
 incomes = read_csv('save/median')
 for i in range(len(incomes)):
     tract = incomes.ix[i]
@@ -12,6 +14,7 @@ for i in range(len(incomes)):
     geoid = geoid.split('US')[1]
     incomes['GEOID'].ix[i] = geoid
 
+# load TIGER census tract geometries
 tract_polygons = []
 geoids = []
 with fiona.open('indata/tiger/tl_2011_36_tract.shp','r') as source:
@@ -32,6 +35,7 @@ tracts['region'] = tract_polygons
 tracts['geoid'] = geoids
 tracts['income'] = np.tile(np.nan, len(tracts))
 
+# match census tract geometry with income data
 for i in range(len(tracts)):
     tract = tracts.iloc[i]
     income = incomes[incomes['GEOID'] == tract['geoid']].iloc[0]['MEDIAN_INCOME']
