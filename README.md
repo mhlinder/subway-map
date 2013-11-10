@@ -12,3 +12,4 @@ Required Python libraries:
 * **pyproj** (transform map projections)
 * **scipy** (Voronoi)
 * **shapely** (geometric objects)
+* **pickle** (saving and loading data)
