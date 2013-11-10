@@ -14,12 +14,6 @@ wget http://www.mta.info/developers/data/nyct/subway/google_transit.zip
 unzip google_transit.zip
 rm google_transit.zip
 
-mkdir mta
-cd mta/
-wget http://www.mta.info/developers/data/nyct/subway/StationEntrances.csv
-wget http://www.mta.info/developers/resources/nyct/subway/StationEntranceDefinitions.csv
-cd ..
-
 mkdir ACS
 cd ACS/
 # wget http://www2.census.gov/acs2011_5yr/summaryfile/2007-2011_ACSSF_By_State_All_Tables/NewYork_Tracts_Block_Groups_Only.zip
