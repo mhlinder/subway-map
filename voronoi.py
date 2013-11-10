@@ -76,6 +76,7 @@ stops = stops[stops['stop_id']!='A12']
 stops = stops[stops['stop_id']!='A32']
 stops = stops[stops['stop_id']!='N12']
 
+# project stop locations into Albers Equal Area
 stops_pts = np.array(stops[['stop_lon','stop_lat']])
 stops_pts = transform(p2, p3, stops_pts[:,0], stops_pts[:,1])
 stops_pts = np.vstack([stops_pts[0], stops_pts[1]]).T
@@ -83,8 +84,7 @@ stops_pts = np.vstack([stops_pts[0], stops_pts[1]]).T
 stops['x'] = stops_pts[:,0]
 stops['y'] = stops_pts[:,1]
 
-# calculate voronoi diagram:
-
+# # calculate voronoi diagram:
 # first, calculate a bounding box to restrict the diagram
 min_x = min(stops_pts[:,0]) - 5000
 max_x = max(stops_pts[:,0]) + 5000
@@ -121,6 +121,8 @@ for i in np.arange(stops.shape[0]):
     stops['v_area'].ix[i] = stops.ix[i]['region'].area
     stops['v_larea'].ix[i] = np.log(stops.ix[i]['v_area'])
 
+
+# # income data
 # read in census income data
 incomes = read_csv('save/median')
 for i in range(len(incomes)):
