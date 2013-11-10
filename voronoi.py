@@ -12,7 +12,7 @@ import pickle
 
 
 # # NYC boundary data
-with fiona.open('indata/nybb_13a/nybb.shp') as source:
+with fiona.open('indata/nybb_13a/nybb.shp','r') as source:
     # set up three projection types: boundary data start; google-standard
     # lat/lon, using WGS84; Albers Equal Area
     p1 = Proj(source.crs,preserve_units=True)
