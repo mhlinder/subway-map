@@ -6,6 +6,8 @@ from pyproj import Proj, transform
 from shapely.geometry import Polygon
 from geopandas import GeoDataFrame
 
+import pickle
+
 # read in census income data
 incomes = read_csv('save/median')
 for i in range(len(incomes)):
@@ -40,3 +42,5 @@ for i in range(len(tracts)):
     tract = tracts.iloc[i]
     income = incomes[incomes['GEOID'] == tract['geoid']].iloc[0]['MEDIAN_INCOME']
     tracts['income'].iloc[i] = income
+
+pickle.dump(tracts,open('save/tracts.p','wb'))
