@@ -30,7 +30,7 @@ cd ..
 
 # # Format data
 # extract data from American Community Survey census estimates, 2007--2011 5yr
-# estimates, median household income.
+# estimates, median household income (table b19013)
 
 # for data documentation, see http://www2.census.gov/acs2011_5yr/summaryfile/ACS_2007_2011_SF_Tech_Doc.pdf
 data_dir='indata/ACS/'
