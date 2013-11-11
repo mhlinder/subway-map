@@ -2,7 +2,7 @@
 # Calculate a Voronoi tesselation of New York City's subway system
 import fiona
 import numpy as np
-from pandas import read_csv
+from pandas import read_csv, DataFrame
 from pyproj import Proj, transform
 from geopandas import GeoDataFrame, GeoSeries
 from shapely.geometry import Polygon, MultiPolygon
