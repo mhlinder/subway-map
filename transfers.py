@@ -12,9 +12,11 @@ for i in range(len(transfers)):
     transfer = transfers.iloc[i]
     from_id = transfer['from_stop_id']
     to_id = transfer['to_stop_id']
+
     if from_id != to_id:
         from_id_in = from_id in already_in
         to_id_in = to_id in already_in
+
         if not from_id_in or not to_id_in:
             if not from_id_in and not to_id_in:
                 transfer_stops.append([from_id,to_id])
@@ -30,6 +32,7 @@ for i in range(len(transfers)):
                 for transfer_stop in transfer_stops:
                     if find in transfer_stop:
                         transfer_stop.append(add)
+                        already_in.append(add)
 
 # for transfer in transfer_stops:
   #   combine = np.any([stops['stop_id'] == stop_id for stop_id in transfer],axis=0)
