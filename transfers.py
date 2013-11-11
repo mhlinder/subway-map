@@ -1,6 +1,6 @@
-from pandas import read_csv
+from pandas import read_csv, DataFrame
 import numpy as np
-import networkx as nx
+from shapely.geometry import MultiPolygon
 import pickle
 
 stops = pickle.load(open('save/stops.p','rb'))
@@ -34,8 +34,24 @@ for i in range(len(transfers)):
                         transfer_stop.append(add)
                         already_in.append(add)
 
-# for transfer in transfer_stops:
-  #   combine = np.any([stops['stop_id'] == stop_id for stop_id in transfer],axis=0)
-  #   concat = stops[combine]
-#     omit = np.all([stops['stop_id'] != stop_id for stop_id in transfer],axis=0)
-#     stops = stops[omit]
+for transfer in transfer_stops:
+    combine = np.any([stops['stop_id'] == stop_id for stop_id in transfer],axis=0)
+    concat = stops[combine]
+    omit = np.all([stops['stop_id'] != stop_id for stop_id in transfer],axis=0)
+    stops = stops[omit]
+
+    # u'stop_id', u'stop_code', u'stop_name', u'stop_desc', u'stop_lat', u'stop_lon', u'zone_id', u'stop_url', u'location_type', u'parent_station', u'x', u'y', u'region', u'v_area', u'v_larea', u'income', u'lincome'
+    new = {column:np.nan for column in concat.columns}
+
+    new['stop_id'] = ['+'.join(concat['stop_id'])]
+
+    new_poly = MultiPolygon()
+    for poly in concat['region']:
+        new_poly = new_poly.union(poly)
+    new['region'] = [new_poly]
+
+    new['v_area'] = [new['region'][0].area]
+    new['v_larea'] = np.log(new['v_area'][0])
+
+    new = DataFrame(new)
+    stops = stops.append(new)
