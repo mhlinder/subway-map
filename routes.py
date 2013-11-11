@@ -30,12 +30,13 @@ stops['y'] = y
 
 system = nx.Graph()
 for pair in unique_routes.keys():
-    # if pair[0] not in si_ids and pair[1] not in si_ids:
-    for route in unique_routes[pair]:
-        route = np.array(route)
-        edges = np.vstack([route[:-1], route[1:]]).T
-        system.add_nodes_from(route)
-        system.add_edges_from(edges)
+    # filter out staten island routes
+    if pair[0] not in si_ids and pair[1] not in si_ids:
+        for route in unique_routes[pair]:
+            route = np.array(route)
+            edges = np.vstack([route[:-1], route[1:]]).T
+            system.add_nodes_from(route)
+            system.add_edges_from(edges)
 
 # find location of each node as subway stop
 locs = {node:None for node in system.nodes()}
@@ -52,18 +53,37 @@ for i in range(len(transfers)):
         system.add_edge(transfer['from_stop_id'], transfer['to_stop_id'])
 
 
-nyc = pickle.load(open('save/nyc.p','rb'))
+# alex rolle's connectedness
+start = '239' # start at Franklin for a test
+visited = [start]
+layers = {0: [start]}
+i = 0
+while len(visited) < len(system.nodes()):
+    i = i+1
+    layers[i] = []
+    j = 0
+    while j < len(layers[i-1]):
+        node = layers[i-1][j]
+        neighbors = nx.all_neighbors(system,node)
+        for neighbor in neighbors:
+            if neighbor not in visited:
+                visited.append(neighbor)
+                layers[i].append(neighbor)
+        j = j+1
 
-for clip in nyc:
-    x,y = clip.exterior.xy
-    plt.plot(x,y,'k-')
+# # Plot
+# nyc = pickle.load(open('save/nyc.p','rb'))
 
-for node in system.nodes():
-    x,y = locs[node]
-    plt.scatter(x,y,marker='.',c='r')
+# for clip in nyc:
+    # x,y = clip.exterior.xy
+    # plt.plot(x,y,'k-')
 
-for edge in system.edges():
-    a,b = edge
-    x1,y1 = locs[a]
-    x2,y2 = locs[b]
-    plt.plot((x1,x2),(y1,y2),'r-')
+# for node in system.nodes():
+    # x,y = locs[node]
+    # plt.scatter(x,y,marker='.',c='r')
+
+# for edge in system.edges():
+    # a,b = edge
+    # x1,y1 = locs[a]
+    # x2,y2 = locs[b]
+    # plt.plot((x1,x2),(y1,y2),'r-')
