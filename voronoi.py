@@ -6,15 +6,27 @@ from pandas import read_csv, DataFrame
 from pyproj import Proj, transform
 from geopandas import GeoDataFrame, GeoSeries
 from shapely.geometry import Polygon, MultiPolygon
-from scipy.spatial import Voronoi
+from scipy.spatial import Voronoi, ConvexHull
 
 import pickle
+
+# #    Table of Contents
+# 1.   Import NYC boundary data, structured as a Shapely MultiPolygon
+# 2.   Import and manipulate subway stops data; filter Staten Island (not a subway)
+# 2.1  Calculate Voronoi regions around subway stops
+# 2.2  Collapse all transfers into single stops (currently optional; does not
+#      play nicely with routes) 
+# 2.3  Routes (planned)
+# 2.4 Incorporate income data
+
+# # Notes
+# All shapes are converted to Albers Equal Area
 
 # # options flags
 transfers_collapse_flag = 0
 
 
-# # NYC boundary data
+# # 1. NYC boundary data
 with fiona.open('indata/nybb_13a/nybb.shp','r') as source:
     # set up three projection types: boundary data start; google-standard
     # lat/lon, using WGS84; Albers Equal Area
@@ -64,7 +76,7 @@ for i in indices:
 nyc = MultiPolygon(boundary)
 
 
-# # Subway stops data
+# # 2. Subway stops data
 stops = read_csv('indata/google_transit/stops.txt')
 stops = stops[stops['location_type']==1]
 # staten island is technically the staten island railroad, NOT part of the
@@ -88,7 +100,9 @@ stops_pts = np.vstack([stops_pts[0], stops_pts[1]]).T
 stops['x'] = stops_pts[:,0]
 stops['y'] = stops_pts[:,1]
 
-# # calculate voronoi diagram:
+stops = stops[['stop_id','stop_name','x','y']]
+
+# # 2.1 calculate voronoi diagram:
 # first, calculate a bounding box to restrict the diagram
 min_x = min(stops_pts[:,0]) - 5000
 max_x = max(stops_pts[:,0]) + 5000
@@ -126,62 +140,84 @@ for i in np.arange(stops.shape[0]):
     stops['v_larea'].ix[i] = np.log(stops.ix[i]['v_area'])
 
 
-# # collapse all transfers into single stops
-if transfers_collapse_flag:
-    transfers = read_csv('indata/google_transit/transfers.txt')
-    # find all stations that involve transfers
-    already_in = []
-    transfer_stops = []
-    for i in range(len(transfers)):
-        transfer = transfers.iloc[i]
-        from_id = transfer['from_stop_id']
-        to_id = transfer['to_stop_id']
+# # 2.2 collapse all transfers into single stops
+transfers = read_csv('indata/google_transit/transfers.txt')
+# find all stations that involve transfers
+already_in = []
+transfer_stops = []
+for i in range(len(transfers)):
+    transfer = transfers.iloc[i]
+    from_id = transfer['from_stop_id']
+    to_id = transfer['to_stop_id']
 
-        if from_id != to_id:
-            from_id_in = from_id in already_in
-            to_id_in = to_id in already_in
+    # if transfer is between two different stations
+    if from_id != to_id:
+        from_id_in = from_id in already_in
+        to_id_in = to_id in already_in
 
-            if not from_id_in or not to_id_in:
-                if not from_id_in and not to_id_in:
-                    transfer_stops.append([from_id,to_id])
-                    already_in.append(from_id)
-                    already_in.append(to_id)
+        # if this exact pair has not occurred before (each is duplicated,
+        # once each way)
+        if not from_id_in or not to_id_in:
+            # if neither has occurred, this is a new transfer
+            if not from_id_in and not to_id_in:
+                transfer_stops.append([from_id,to_id])
+                already_in.append(from_id)
+                already_in.append(to_id)
+            # otherwise, find the one that already exists, and add the new
+            # one to it
+            else:
+                if from_id_in:
+                    find = from_id
+                    add = to_id
                 else:
-                    if from_id_in:
-                        find = from_id
-                        add = to_id
-                    else:
-                        find = to_id
-                        add = from_id
-                    for transfer_stop in transfer_stops:
-                        if find in transfer_stop:
-                            transfer_stop.append(add)
-                            already_in.append(add)
+                    find = to_id
+                    add = from_id
+                for transfer_stop in transfer_stops:
+                    if find in transfer_stop:
+                        transfer_stop.append(add)
+                        already_in.append(add)
 
-    # generate a new stop entry for each transfer hub
-    for transfer in transfer_stops:
-        combine = np.any([stops['stop_id'] == stop_id for stop_id in transfer],axis=0)
-        concat = stops[combine]
-        omit = np.all([stops['stop_id'] != stop_id for stop_id in transfer],axis=0)
-        stops = stops[omit]
+# generate a new stop entry for each transfer hub
+for transfer in transfer_stops:
+    # find all to be combined
+    combine = np.any([stops['stop_id'] == stop_id for stop_id in transfer],axis=0)
+    concat = stops[combine]
+    # remove all those that will be combined
+    omit = np.all([stops['stop_id'] != stop_id for stop_id in transfer],axis=0)
+    stops = stops[omit]
 
-        new = {column:np.nan for column in concat.columns}
+    # add a new data frame concatenating all of them
+    new = {column:np.nan for column in concat.columns}
 
-        new['stop_id'] = ['+'.join(concat['stop_id'])]
+    for attr in ['stop_id','stop_name']:
+        new[attr] = ['+'.join(concat[attr])]
 
-        new_poly = MultiPolygon()
-        for poly in concat['region']:
-            new_poly = new_poly.union(poly)
-        new['region'] = [new_poly]
+    # Find convex hull for points; find mean of x and y values
+    xy = np.vstack([concat['x'].values,concat['y']]).T
+    vertices = xy
+    if len(xy) > 2:
+        hull = ConvexHull(xy)
+        vertices = hull.points[hull.simplices]
+        vertices = np.vstack([vertices[:,0],vertices[:,1]])
+        vertices = DataFrame(vertices).drop_duplicates().values
+    x = np.mean(vertices[:,0])
+    new['x'] = x
+    y = np.mean(vertices[:,1])
+    new['y'] = y
 
-        new['v_area'] = [new['region'][0].area]
-        new['v_larea'] = np.log(new['v_area'][0])
+    new_poly = MultiPolygon()
+    for poly in concat['region']:
+        new_poly = new_poly.union(poly)
+    new['region'] = [new_poly]
 
-        new = DataFrame(new)
-        stops = stops.append(new)
+    new['v_area'] = new['region'][0].area
+    new['v_larea'] = np.log(new['v_area'])
+
+    new = DataFrame(new)
+    stops = stops.append(new)
 
 
-# # income data
+# # 2.4 income data
 # read in census income data
 incomes = read_csv('save/median')
 for i in range(len(incomes)):
