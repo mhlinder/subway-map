@@ -55,7 +55,8 @@ for start in routes.keys():
         if route not in unique_routes[pair]:
             unique_routes[pair].append(route)
 
-# remove north/south distinction; just use first three letters in stop names
+# remove north/south distinction; just use first three letters in stop names;
+# use transfer hub id, not original id
 unique_routes_new = {}
 for pair in unique_routes.keys():
     start = pair[0][:3]
@@ -66,16 +67,16 @@ for pair in unique_routes.keys():
         route_new = []
         for stop in route:
             stop = stop[:3]
+            if stop in already_in:
+                stop = transfer_map[stop]
             route_new.append(stop)
         unique_routes_new[pair_new].append(route_new)
 unique_routes = unique_routes_new
 
-
 # # collect connectedness of each stop
-p1 = Proj({'proj':'longlat', 'datum':'WGS84'})
-p2 = Proj({'proj':'aea', 'datum':'WGS84', 'lon_0':'-96'})
+p2 = Proj({'proj':'longlat', 'datum':'WGS84'})
+p3 = Proj({'proj':'aea', 'datum':'WGS84', 'lon_0':'-96'})
 
-unique_routes = pickle.load(open('save/unique_routes.p','rb'))
 stops = pd.read_csv('indata/google_transit/stops.txt')
 stops = stops[stops['location_type']==1]
 
@@ -88,7 +89,7 @@ stops.index = range(len(stops))
 
 x = stops['stop_lon']
 y = stops['stop_lat']
-aea = transform(p1,p2,x,y)
+aea = transform(p2,p3,x,y)
 x,y = aea
 stops['x'] = x
 stops['y'] = y
@@ -111,7 +112,7 @@ for node in system.nodes():
     locs[node] = stop[['x','y']].values
 
 # rudimentary incorporation of transfers--just another edge
-transfers = pd.read_csv('indata/google_transit/transfers.txt')
+transfers = read_csv('indata/google_transit/transfers.txt')
 for i in range(len(transfers)):
     transfer = transfers.iloc[i]
     if transfer['from_stop_id'] != transfer['to_stop_id']:
