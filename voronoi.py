@@ -19,7 +19,8 @@ import pickle
 #        play nicely with routes) 
 # 2.3    Routes
 # 2.3.1  Extract all unique routes
-# 2.3.2  Collect connectedness of each stop
+# 2.3.2  Collect rolle connectedness of each stop
+# 2.3.3  Collect graph theoretic connectedness of each stop
 # 2.4    Incorporate income data
 
 # # Notes
@@ -304,7 +305,7 @@ for pair in unique_routes.keys():
         unique_routes_new[pair_new].append(route_new)
 unique_routes = unique_routes_new
 
-# # 2.3.2 collect connectedness of each stop
+# # 2.3.2 collect rolle connectedness of each stop
 system = Graph()
 for pair in unique_routes.keys():
     # filter out staten island routes
@@ -321,14 +322,6 @@ stop_id = stops['stop_id'].tolist()
 for node in system.nodes():
     stop = stops[stops['stop_id']==node].iloc[0]
     locs[node] = stop[['x','y']].values
-
-# # rudimentary incorporation of transfers--just another edge
-# transfers = read_csv('indata/google_transit/transfers.txt')
-# for i in range(len(transfers)):
-    # transfer = transfers.iloc[i]
-    # if transfer['from_stop_id'] != transfer['to_stop_id']:
-        # system.add_edge(transfer['from_stop_id'], transfer['to_stop_id'])
-
 
 # alex rolle's connectedness
 def f(layers, n):
@@ -381,7 +374,23 @@ for i in range(len(stops)):
         connectedness.append(m(layers))
     else:
         connectedness.append(np.nan)
-stops['connectedness'] = connectedness
+stops['rolle_connectedness'] = connectedness
+
+# # 2.3.3 graph-theoretic connectedness
+# sigma.p is simply the output of nx.all_pairs_node_connectivity_matrix(system);
+# it takes a long time to calculate
+sigma = pickle.load(open('save/sigma.p','rb'))
+sigma = np.mean(sigma,axis=1)
+
+stops['graph_connectedness'] = np.tile(np.nan,len(stops))
+stops['graph_connectedness'] = stops['graph_connectedness'].astype('float32')
+
+nodes = system.nodes()
+for i in range(len(nodes)):
+    node = nodes[i]
+    index = np.where(stops['stop_id']==node)[0][0]
+    stops['graph_connectedness'].iloc[index] = sigma[i]
+
 
 # # 2.4 income data
 # read in census income data
