@@ -94,13 +94,10 @@ stops = stops[subway]
 stops.index = range(len(stops))
 
 # this still results in 4 dupes; remove each by hand
-dupes = ['718','A12','A32','N12']
-# for dupe in dupes:
-#     stops = stops[stops['stop_id']!=dupe]
-# stops = stops[stops['stop_id']!='718']
-# stops = stops[stops['stop_id']!='A12']
-# stops = stops[stops['stop_id']!='A32']
-# stops = stops[stops['stop_id']!='N12']
+# dupes = ['718','A12','A32','N12']
+dupes = ['140','N12']
+for dupe in dupes:
+    stops = stops[stops['stop_id']!=dupe]
 
 # project stop locations into Albers Equal Area
 stops_pts = np.array(stops[['stop_lon','stop_lat']])
