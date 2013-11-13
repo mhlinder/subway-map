@@ -15,8 +15,7 @@ ax = fig.add_subplot(111)
 fig.set_size_inches(24,24)
 ax.axis('off')
 
-area_measure = 'v_larea'
-area_measure = 'connectedness'
+area_measure = 'graph_connectedness'
 # calculate percentiles for binning area
 q = float(100)/6
 qs = q*np.arange(7)
