@@ -195,6 +195,7 @@ for stop in already_in:
                 transfer_map[stop] = '+'.join(transfer)
 
 # generate a new stop entry for each transfer hub
+concatted = []
 for transfer in transfer_stops:
     # find all to be combined
     combine = np.any([stops['stop_id'] == stop_id for stop_id in transfer],axis=0)
@@ -208,6 +209,7 @@ for transfer in transfer_stops:
 
     for attr in ['stop_id','stop_name']:
         new[attr] = ['+'.join(concat[attr])]
+    concatted.append(new['stop_id'])
 
     # Find convex hull for points; find mean of x and y values
     xy = np.vstack([concat['x'].values,concat['y']]).T
@@ -323,12 +325,12 @@ for node in system.nodes():
     stop = stops[stops['stop_id']==node].iloc[0]
     locs[node] = stop[['x','y']].values
 
-# rudimentary incorporation of transfers--just another edge
-transfers = read_csv('indata/google_transit/transfers.txt')
-for i in range(len(transfers)):
-    transfer = transfers.iloc[i]
-    if transfer['from_stop_id'] != transfer['to_stop_id']:
-        system.add_edge(transfer['from_stop_id'], transfer['to_stop_id'])
+# # rudimentary incorporation of transfers--just another edge
+# transfers = read_csv('indata/google_transit/transfers.txt')
+# for i in range(len(transfers)):
+    # transfer = transfers.iloc[i]
+    # if transfer['from_stop_id'] != transfer['to_stop_id']:
+        # system.add_edge(transfer['from_stop_id'], transfer['to_stop_id'])
 
 
 # alex rolle's connectedness
@@ -362,7 +364,8 @@ for i in range(len(stops)):
     start = stop['stop_id']
 
     if start in system.nodes():
-        start = node
+        # start = node
+        node = start
         visited = [start]
         layers = {0: [start]}
         i = 0
@@ -453,4 +456,5 @@ stops.index = range(len(stops))
 
 # # save for later use
 pickle.dump(stops,open('save/stops.p','wb'))
+pickle.dump(system,open('save/system.p','wb'))
 pickle.dump(nyc,open('save/nyc.p','wb'))
