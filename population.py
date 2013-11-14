@@ -76,7 +76,9 @@ for i in range(len(stops)):
     stops['population'].iloc[i] = pop
 
 # convert to people per kilometer
-stops['pop_dens'] = stops['population'] / (stops['v_area']/1000000)
-stops['lpop_dens'] = stops['population'] / (stops['v_area']/1000000)
+stops['pop_dens'] = stops['population'] / stops['v_area']
+stops['lpop_dens'] = stops['population'] / stops['v_area']
+# stops['pop_dens'] = stops['population'] / (stops['v_area']/1000000)
+# stops['lpop_dens'] = stops['population'] / (stops['v_area']/1000000)
 
 pickle.dump(stops,open('save/stops_pop.p','wb'))
