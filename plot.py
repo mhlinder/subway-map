@@ -4,8 +4,7 @@ from geopandas import GeoDataFrame, GeoSeries
 from descartes import PolygonPatch
 import numpy as np
 
-stops = pickle.load(open('save/stops.p','rb'))
-nyc = pickle.load(open('save/nyc.p','rb'))
+stops = pickle.load(open('save/stops_pop.p','rb'))
 
 # Plotting
 # # This is a choropleth according to area
@@ -15,23 +14,23 @@ ax = fig.add_subplot(111)
 fig.set_size_inches(24,24)
 ax.axis('off')
 
-area_measure = 'graph_connectedness'
+measure = 'lpop_dens'
 # calculate percentiles for binning area
 q = float(100)/6
 qs = q*np.arange(7)
-qs = np.percentile(stops[area_measure], qs.tolist())
+qs = np.percentile(stops[measure], qs.tolist())
 qs = np.vstack([qs[:-1], qs[1:]]).T
 
 # 'Blues' colorscheme from colorbrewer2.org; ascending from white to blue
 colors = ['#EFF3FF', '#C6DBEF', '#9ECAE1', '#6BAED6', '#3182BD', '#08519C']
 for row in stops.iterrows():
     row = row[1]
-    if not np.isnan(row[area_measure]):
+    if not np.isnan(row[measure]):
         polygon = row['region']
 
         # plot region
         # find index of bin for coloring
-        comparison = row[area_measure] <= qs
+        comparison = row[measure] <= qs
         if np.all(comparison):
             color_index = 0
         else:
@@ -44,10 +43,21 @@ for row in stops.iterrows():
             for subpolygon in polygon:
                 ax.add_patch(PolygonPatch(subpolygon,facecolor=c,edgecolor="#000000"))
 
+
+nyc = pickle.load(open('save/nyc.p','rb'))
 for clip in nyc:
     x, y = clip.exterior.xy
     ax.plot(x, y, color="#000000", linewidth=1, zorder=2)
 
-# plt.scatter(stops['x'].values,stops['y'].values,c='k',zorder=2)
+system = pickle.load(open('save/system.p','rb'))
+for edge in system.edges():
+    stop1 = stops[stops['stop_id']==edge[0]].iloc[0]
+    stop2 = stops[stops['stop_id']==edge[1]].iloc[0]
+    x1,y1 = stop1[['x','y']].values
+    x2,y2 = stop2[['x','y']].values
+    x = [x1,x2]
+    y = [y1,y2]
+    plt.plot(x,y,'r',zorder=2)
 
 plt.savefig('save/choropleth.png')
+plt.close()

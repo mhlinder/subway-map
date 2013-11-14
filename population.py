@@ -1,17 +1,22 @@
 from pandas import read_csv
+from pyproj import Proj, transform
+import fiona
+import numpy as np
+from shapely.geometry import Polygon, MultiPolygon
+from geopandas import GeoDataFrame
 
 import pickle
 
 stops = pickle.load(open('save/stops.p','rb'))
 
-# # 2.4 income data
-# read in census income data
-incomes = read_csv('save/population')
-for i in range(len(incomes)):
-    tract = incomes.ix[i]
+# # 2.4 population data
+# read in census populatio data
+pops = read_csv('save/population')
+for i in range(len(pops)):
+    tract = pops.ix[i]
     geoid = tract['GEOID']
     geoid = geoid.split('US')[1]
-    incomes['GEOID'].ix[i] = geoid
+    pops['GEOID'].ix[i] = geoid
 
 # load TIGER census tract geometries
 tract_polygons = []
@@ -20,7 +25,9 @@ with fiona.open('indata/tiger/tl_2011_36_tract.shp','r') as source:
     p1 = Proj({'proj':'longlat', 'datum':'WGS84'})
     p2 = Proj({'proj':'aea', 'datum':'WGS84', 'lon_0':'-96'})
     for shape in source:
-        if shape['properties']['GEOID'] in incomes['GEOID'].values:
+        if shape['properties']['GEOID'] in pops['GEOID'].values:
+            if shape['geometry']['type']=='MultiPolygon':
+                continue
             subshape = shape['geometry']['coordinates'][0]
             p1_points = np.array(subshape)
             p2_points = transform(p1,p2,p1_points[:,0],p1_points[:,1])
@@ -32,13 +39,14 @@ with fiona.open('indata/tiger/tl_2011_36_tract.shp','r') as source:
 tracts = GeoDataFrame(index=range(len(tract_polygons)))
 tracts['region'] = tract_polygons
 tracts['geoid'] = geoids
-tracts['income'] = np.tile(np.nan, len(tracts))
+tracts['population'] = np.tile(np.nan, len(tracts))
+tracts['pop_density'] = np.tile(np.nan, len(tracts))
 
-# match census tract geometry with income data
+# match census tract geometry with population data
 for i in range(len(tracts)):
-    tract = tracts.iloc[i]
-    income = incomes[incomes['GEOID'] == tract['geoid']].iloc[0]['MEDIAN_INCOME']
-    tracts['income'].iloc[i] = income
+    tract = pops.iloc[i]
+    pop = pops[pops['GEOID'] == tract['GEOID']].iloc[0]['POPULATION']
+    tracts['population'].iloc[i] = pop
 
 stops_list = stops['region'].tolist()
 tracts_list = tracts['region'].tolist()
@@ -50,19 +58,25 @@ for i in range(len(stops_list)):
         tract = tracts_list[j]
         if stop.intersects(tract):
             intersection = (stop.intersection(tract))
-            contains.append((intersection.area,tracts.iloc[j]['income']))
+            contains.append((intersection.area,tracts.iloc[j]['population']))
     tract_sets.append(contains)
 
 # set income for each subway stop to be average median household income,
 # weighted by proportion of total area represented by each tract
-stops['income'] = np.tile(np.nan, len(stops))
+stops['population'] = np.tile(np.nan, len(stops))
 for i in range(len(stops)):
     stop = stops.iloc[i]
     tract_set = np.array(tract_sets[i])
 
     total = np.sum(tract_set[:,0])
     weights = tract_set[:,0] / total
-    weighted_incomes = tract_set[:,1]*weights
-    income = np.sum(weighted_incomes)
+    weighted_pops = tract_set[:,1]*weights
+    pop = np.sum(weighted_pops)
 
-    stops['income'].iloc[i] = income
+    stops['population'].iloc[i] = pop
+
+# convert to people per kilometer
+stops['pop_dens'] = stops['population'] / (stops['v_area']/1000000)
+stops['lpop_dens'] = stops['population'] / (stops['v_area']/1000000)
+
+pickle.dump(stops,open('save/stops_pop.p','wb'))
