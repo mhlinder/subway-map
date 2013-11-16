@@ -5,7 +5,7 @@ import numpy as np
 from pandas import read_csv, DataFrame
 from pyproj import Proj, transform
 from geopandas import GeoDataFrame, GeoSeries
-from shapely.geometry import Polygon, MultiPolygon
+from shapely.geometry import Polygon, MultiPolygon, Point
 from scipy.spatial import Voronoi, ConvexHull
 from networkx import Graph, all_neighbors
 
@@ -22,6 +22,7 @@ import pickle
 # 2.3.2  Collect rolle connectedness of each stop
 # 2.3.3  Collect graph theoretic connectedness of each stop
 # 2.4    Incorporate income data
+# 2.6    Add borough categorical variable
 
 # # Notes
 # All shapes are converted to Albers Equal Area
@@ -31,6 +32,10 @@ transfers_collapse_flag = 0
 
 
 # # 1. NYC boundary data
+boroughs = {}
+# maps BoroCode to categorical
+borough_names = {5:'SI',4:'Q',3:'BK',1:'M',2:'BX'}
+
 with fiona.open('indata/nybb_13a/nybb.shp','r') as source:
     # set up three projection types: boundary data start; google-standard
     # lat/lon, using WGS84; Albers Equal Area
@@ -40,9 +45,11 @@ with fiona.open('indata/nybb_13a/nybb.shp','r') as source:
 
     # for each shape, convert its coordinates to AEA
     nyc = MultiPolygon()
-    for shape in source:
-        for subshape in shape['geometry']['coordinates']:
-            p1_points = np.array(subshape[0])
+    for borough in source:
+        borough_shapes = MultiPolygon()
+        borocode = borough['properties']['BoroCode']
+        for shape in borough['geometry']['coordinates']:
+            p1_points = np.array(shape[0])
 
             p2_points = transform(p1, p2, p1_points[:,0], p1_points[:,1])
             p3_points = transform(p2, p3, p2_points[0], p2_points[1])
@@ -50,6 +57,8 @@ with fiona.open('indata/nybb_13a/nybb.shp','r') as source:
 
             new = Polygon(p3_points)
             nyc = nyc.union(new)
+            borough_shapes = borough_shapes.union(new)
+        boroughs[borocode] = borough_shapes
 
 # i = 0
 # for shape in nyc:
@@ -457,6 +466,18 @@ for i in range(len(stops)):
 
 # log income
 stops['lincome'] = np.log(stops['income'])
+
+
+# # 2.6 Add borough categorical variable
+stops['borough'] = np.tile(np.nan,len(stops))
+stops['borough'] = stops['borough'].astype('string')
+for i in range(len(stops)):
+    stop = stops.iloc[i]
+    loc = Point(stop[['x','y']].values)
+    for key, value in boroughs.iteritems():
+        if value.contains(loc):
+            stops['borough'].iloc[i] = borough_names[key]
+
 
 stops.index = range(len(stops))
 
