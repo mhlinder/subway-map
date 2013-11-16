@@ -6,15 +6,18 @@ import numpy as np
 
 stops = pickle.load(open('save/stops_pop.p','rb'))
 
+measure = 'lincome'
+outname = 'save/plots/choropleth_' + measure + '.png'
+
 # Plotting
 # # This is a choropleth according to area
 fig = plt.figure(1,dpi=540,frameon=False)
+plt.title(measure)
 ax = fig.add_subplot(111)
 
 fig.set_size_inches(24,24)
 ax.axis('off')
 
-measure = 'lpop_dens'
 # calculate percentiles for binning area
 q = float(100)/6
 qs = q*np.arange(7)
@@ -57,7 +60,7 @@ for edge in system.edges():
     x2,y2 = stop2[['x','y']].values
     x = [x1,x2]
     y = [y1,y2]
-    plt.plot(x,y,'r',zorder=2)
+    # plt.plot(x,y,'k',zorder=2)
 
-plt.savefig('save/choropleth.png')
+plt.savefig(outname)
 plt.close()
