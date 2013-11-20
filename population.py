@@ -7,7 +7,6 @@ from geopandas import GeoDataFrame
 
 import pickle
 
-stops = pickle.load(open('save/stops.p','rb'))
 
 # # 2.5 population data
 # read in census populatio data
@@ -40,6 +39,7 @@ tracts = GeoDataFrame(index=range(len(tract_polygons)))
 tracts['region'] = tract_polygons
 tracts['geoid'] = geoids
 tracts['population'] = np.tile(np.nan, len(tracts))
+tracts['area'] = np.tile(np.nan, len(tracts))
 tracts['pop_density'] = np.tile(np.nan, len(tracts))
 
 # match census tract geometry with population data
@@ -48,35 +48,50 @@ for i in range(len(tracts)):
     pop = pops[pops['GEOID'] == tract['GEOID']].iloc[0]['POPULATION']
     tracts['population'].iloc[i] = pop
 
-stops_list = stops['region'].tolist()
-tracts_list = tracts['region'].tolist()
-tract_sets = []
-for i in range(len(stops_list)):
-    stop = stops_list[i]
-    contains = []
-    for j in range(len(tracts_list)):
-        tract = tracts_list[j]
-        if stop.intersects(tract):
-            intersection = (stop.intersection(tract))
-            contains.append((intersection.area,tracts.iloc[j]['population']/(tract.area/1000000)))
-    tract_sets.append(contains)
+areas = []
+for i in range(len(tracts)):
+    tract = tracts.iloc[i]
+    area = tract['region'].area / 1000000 # in sq km
+    areas.append(area)
+tracts['area'] = areas
 
-# set income for each subway stop to be average median household income,
-# weighted by proportion of total area represented by each tract
-stops['population'] = np.tile(np.nan, len(stops))
-for i in range(len(stops)):
-    stop = stops.iloc[i]
-    tract_set = np.array(tract_sets[i])
+tracts['pop_dens'] = tracts['population'] / tracts['area']
+tracts['lpop_dens'] = np.log(tracts['pop_dens'])
 
-    total = np.sum(tract_set[:,0])
-    weights = tract_set[:,0] / total
-    weighted_pops = tract_set[:,1]*weights
-    pop = np.sum(weighted_pops)
+tracts = tracts[ tracts['population']!=0 ]
 
-    stops['population'].iloc[i] = pop
+# stops = pickle.load(open('save/stops.p','rb'))
 
-# convert to people per kilometer
-stops['pop_dens'] = stops['population'] #/ (stops['v_area']/1000000)
-stops['lpop_dens'] = np.log(stops['pop_dens'])
+# stops_list = stops['region'].tolist()
+# tracts_list = tracts['region'].tolist()
+# tract_sets = []
+# for i in range(len(stops_list)):
+    # stop = stops_list[i]
+    # contains = []
+    # for j in range(len(tracts_list)):
+        # tract = tracts_list[j]
+        # if stop.intersects(tract):
+            # intersection = (stop.intersection(tract))
+            # contains.append((intersection.area,tracts.iloc[j]['population']/(tract.area/1000000)))
+    # tract_sets.append(contains)
 
-pickle.dump(stops,open('save/stops_pop.p','wb'))
+# # set income for each subway stop to be average median household income,
+# # weighted by proportion of total area represented by each tract
+# stops['population'] = np.tile(np.nan, len(stops))
+# for i in range(len(stops)):
+    # stop = stops.iloc[i]
+    # tract_set = np.array(tract_sets[i])
+
+    # total = np.sum(tract_set[:,0])
+    # weights = tract_set[:,0] / total
+    # weighted_pops = tract_set[:,1]*weights
+    # pop = np.sum(weighted_pops)
+
+    # stops['population'].iloc[i] = pop
+
+# # convert to people per kilometer
+# stops['pop_dens'] = stops['population'] #/ (stops['v_area']/1000000)
+# stops['lpop_dens'] = np.log(stops['pop_dens'])
+
+# pickle.dump(stops,open('save/stops_pop.p','wb'))
+pickle.dump(tracts,open('save/tracts.p','wb'))

@@ -4,9 +4,10 @@ from geopandas import GeoDataFrame, GeoSeries
 from descartes import PolygonPatch
 import numpy as np
 
-stops = pickle.load(open('save/stops_pop.p','rb'))
+# stops = pickle.load(open('save/stops_pop.p','rb'))
+stops = pickle.load(open('save/tracts.p','rb'))
 
-measure = 'lincome'
+measure = 'lpop_dens'
 outname = 'save/plots/choropleth_' + measure + '.png'
 
 # Plotting
@@ -52,15 +53,15 @@ for clip in nyc:
     x, y = clip.exterior.xy
     ax.plot(x, y, color="#000000", linewidth=1, zorder=2)
 
-system = pickle.load(open('save/system.p','rb'))
-for edge in system.edges():
-    stop1 = stops[stops['stop_id']==edge[0]].iloc[0]
-    stop2 = stops[stops['stop_id']==edge[1]].iloc[0]
-    x1,y1 = stop1[['x','y']].values
-    x2,y2 = stop2[['x','y']].values
-    x = [x1,x2]
-    y = [y1,y2]
-    # plt.plot(x,y,'k',zorder=2)
+# system = pickle.load(open('save/system.p','rb'))
+# for edge in system.edges():
+    # stop1 = stops[stops['stop_id']==edge[0]].iloc[0]
+    # stop2 = stops[stops['stop_id']==edge[1]].iloc[0]
+    # x1,y1 = stop1[['x','y']].values
+    # x2,y2 = stop2[['x','y']].values
+    # x = [x1,x2]
+    # y = [y1,y2]
+    # # plt.plot(x,y,'k',zorder=2)
 
 plt.savefig(outname)
 plt.close()
