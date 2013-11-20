@@ -9,7 +9,7 @@ import pickle
 
 stops = pickle.load(open('save/stops.p','rb'))
 
-# # 2.4 population data
+# # 2.5 population data
 # read in census populatio data
 pops = read_csv('save/population')
 for i in range(len(pops)):
@@ -58,7 +58,7 @@ for i in range(len(stops_list)):
         tract = tracts_list[j]
         if stop.intersects(tract):
             intersection = (stop.intersection(tract))
-            contains.append((intersection.area,tracts.iloc[j]['population']))
+            contains.append((intersection.area,tracts.iloc[j]['population']/(tract.area/1000000)))
     tract_sets.append(contains)
 
 # set income for each subway stop to be average median household income,
@@ -76,7 +76,7 @@ for i in range(len(stops)):
     stops['population'].iloc[i] = pop
 
 # convert to people per kilometer
-stops['pop_dens'] = stops['population'] / (stops['v_area']/1000000)
+stops['pop_dens'] = stops['population'] #/ (stops['v_area']/1000000)
 stops['lpop_dens'] = np.log(stops['pop_dens'])
 
 pickle.dump(stops,open('save/stops_pop.p','wb'))
