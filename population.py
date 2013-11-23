@@ -45,20 +45,30 @@ tracts['geoid'] = geoids
 tracts['population'] = np.tile(np.nan, len(tracts))
 tracts['area'] = np.tile(np.nan, len(tracts))
 
+nyc = pickle.load(open('save/nyc.p','rb'))
+
+areas = []
+for i in range(len(tracts)):
+    if i % 100 == 0:
+        print i 
+    # trim to nyc boundaries, no water (nybb_13a)
+    tract = tracts.iloc[i]
+    region = tract['region']
+    if nyc.intersects(region):
+        tracts['region'].iloc[i] = nyc.intersection(region)
+
+    # find area
+    area = tract['region'].area / 1000000 # in sq km
+    areas.append(area)
+tracts['area'] = areas
+tracts['larea'] = np.log(tracts['area'])
+
+
 # match census tract geometry with population data
 for i in range(len(tracts)):
     tract = pops.iloc[i]
     pop = pops[pops['GEOID'] == tract['GEOID']].iloc[0]['POPULATION']
     tracts['population'].iloc[i] = pop
-
-# find area
-areas = []
-for i in range(len(tracts)):
-    tract = tracts.iloc[i]
-    area = tract['region'].area / 1000000 # in sq km
-    areas.append(area)
-tracts['area'] = areas
-tracts['larea'] = np.log(tracts['area'])
 
 # calculate population density
 tracts['pop_dens'] = tracts['population'] / tracts['area']
