@@ -2,8 +2,9 @@ from pandas import read_csv
 from pyproj import Proj, transform
 import fiona
 import numpy as np
-from shapely.geometry import Polygon, MultiPolygon
+from shapely.geometry import Polygon, MultiPolygon, box
 from geopandas import GeoDataFrame
+import matplotlib.pyplot as plt
 
 import pickle
 
@@ -28,19 +29,21 @@ with fiona.open('indata/tiger/tl_2011_36_tract.shp','r') as source:
             if shape['geometry']['type']=='MultiPolygon':
                 continue
             subshape = shape['geometry']['coordinates'][0]
+            # project from latitude to longitude
             p1_points = np.array(subshape)
             p2_points = transform(p1,p2,p1_points[:,0],p1_points[:,1])
             p2_points = np.array(p2_points).T
 
+            # create polygon
             tract_polygons.append(Polygon(p2_points))
             geoids.append(shape['properties']['GEOID'])
 
 tracts = GeoDataFrame(index=range(len(tract_polygons)))
+# initialize data
 tracts['region'] = tract_polygons
 tracts['geoid'] = geoids
 tracts['population'] = np.tile(np.nan, len(tracts))
 tracts['area'] = np.tile(np.nan, len(tracts))
-tracts['pop_density'] = np.tile(np.nan, len(tracts))
 
 # match census tract geometry with population data
 for i in range(len(tracts)):
@@ -48,50 +51,36 @@ for i in range(len(tracts)):
     pop = pops[pops['GEOID'] == tract['GEOID']].iloc[0]['POPULATION']
     tracts['population'].iloc[i] = pop
 
+# find area
 areas = []
 for i in range(len(tracts)):
     tract = tracts.iloc[i]
     area = tract['region'].area / 1000000 # in sq km
     areas.append(area)
 tracts['area'] = areas
+tracts['larea'] = np.log(tracts['area'])
 
+# calculate population density
 tracts['pop_dens'] = tracts['population'] / tracts['area']
 tracts['lpop_dens'] = np.log(tracts['pop_dens'])
 
+# only tracts with a population
 tracts = tracts[ tracts['population']!=0 ]
 
-# stops = pickle.load(open('save/stops.p','rb'))
-
-# stops_list = stops['region'].tolist()
-# tracts_list = tracts['region'].tolist()
-# tract_sets = []
-# for i in range(len(stops_list)):
-    # stop = stops_list[i]
-    # contains = []
-    # for j in range(len(tracts_list)):
-        # tract = tracts_list[j]
-        # if stop.intersects(tract):
-            # intersection = (stop.intersection(tract))
-            # contains.append((intersection.area,tracts.iloc[j]['population']/(tract.area/1000000)))
-    # tract_sets.append(contains)
-
-# # set income for each subway stop to be average median household income,
-# # weighted by proportion of total area represented by each tract
-# stops['population'] = np.tile(np.nan, len(stops))
-# for i in range(len(stops)):
-    # stop = stops.iloc[i]
-    # tract_set = np.array(tract_sets[i])
-
-    # total = np.sum(tract_set[:,0])
-    # weights = tract_set[:,0] / total
-    # weighted_pops = tract_set[:,1]*weights
-    # pop = np.sum(weighted_pops)
-
-    # stops['population'].iloc[i] = pop
-
-# # convert to people per kilometer
-# stops['pop_dens'] = stops['population'] #/ (stops['v_area']/1000000)
-# stops['lpop_dens'] = np.log(stops['pop_dens'])
-
-# pickle.dump(stops,open('save/stops_pop.p','wb'))
 pickle.dump(tracts,open('save/tracts.p','wb'))
+
+# plot
+fig = plt.figure(1,dpi=540,frameon=False)
+fig.set_size_inches(24,24)
+ax = fig.add_subplot(111)
+ax.axis('off')
+
+for i in range(len(tracts)):
+    tract = tracts.iloc[i]
+    minx,miny,maxx,maxy=tract['region'].bounds
+    bbox = box(minx,miny,maxx,maxy)
+    plt.plot(bbox.exterior.xy[0],bbox.exterior.xy[1],'k-')
+
+outname = 'save/plots/bboxes.png'
+plt.savefig(outname)
+plt.close()
