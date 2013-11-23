@@ -31,6 +31,8 @@ import pickle
 transfers_collapse_flag = 0
 
 
+print "loading NYC boundary data..."
+
 # # 1. NYC boundary data
 boroughs = {}
 # maps BoroCode to categorical
@@ -88,6 +90,9 @@ for i in indices:
     boundary.append(nyc[i])
 nyc = MultiPolygon(boundary)
 
+print "OK"
+
+print "loading subway stops..."
 
 # # 2. Subway stops data
 stops = read_csv('indata/google_transit/stops.txt')
@@ -118,6 +123,10 @@ stops['x'] = stops_pts[:,0]
 stops['y'] = stops_pts[:,1]
 
 stops = stops[['stop_id','stop_name','x','y']]
+
+print "OK"
+
+print "calculating voronoi tesselation..."
 
 # # 2.1 calculate voronoi diagram:
 # first, calculate a bounding box to restrict the diagram
@@ -156,6 +165,9 @@ for i in np.arange(stops.shape[0]):
     stops['v_area'].ix[i] = stops.ix[i]['region'].area
     stops['v_larea'].ix[i] = np.log(stops.ix[i]['v_area'])
 
+print "OK"
+
+print "collapsing transfers..."
 
 # # 2.2 collapse all transfers into single stops
 transfers = read_csv('indata/google_transit/transfers.txt')
@@ -242,6 +254,10 @@ for transfer in transfer_stops:
     new = DataFrame(new)
     stops = stops.append(new)
 
+print "OK"
+print 'calculating connectedness...'
+
+print '    building representation of subway system...'
 # # 2.3 calculate connectedness
 # # 2.3.1 generate unique routes
 trips = read_csv('indata/google_transit/stop_times.txt')
@@ -314,6 +330,8 @@ for pair in unique_routes.keys():
         unique_routes_new[pair_new].append(route_new)
 unique_routes = unique_routes_new
 
+print '    tracing rolle connectedness...'
+
 # # 2.3.2 collect rolle connectedness of each stop
 system = Graph()
 for pair in unique_routes.keys():
@@ -385,6 +403,8 @@ for i in range(len(stops)):
         connectedness.append(np.nan)
 stops['rolle_connectedness'] = connectedness
 
+print '    tracting graph-theoretic connectedness...'
+
 # # 2.3.3 graph-theoretic connectedness
 # sigma.p is simply the output of nx.all_pairs_node_connectivity_matrix(system);
 # it takes a long time to calculate
@@ -400,6 +420,9 @@ for i in range(len(nodes)):
     index = np.where(stops['stop_id']==node)[0][0]
     stops['graph_connectedness'].iloc[index] = sigma[i]
 
+print "OK"
+
+print "loading census tracts and income data..."
 
 # # 2.4 income data
 # read in census income data
