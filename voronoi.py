@@ -255,241 +255,173 @@ for transfer in transfer_stops:
     stops = stops.append(new)
 
 print "OK"
-print 'calculating connectedness...'
 
-print '    building representation of subway system...'
-# # 2.3 calculate connectedness
-# # 2.3.1 generate unique routes
-trips = read_csv('indata/google_transit/stop_times.txt')
-ids = trips['trip_id'].unique()
+# print 'calculating connectedness...'
 
-# find weekday ('WKD') trips
-starts = trips[trips['stop_sequence']==1]
-wkd = ['WKD' in i for i in starts['trip_id']]
-wkd_starts = starts[wkd]
+# print '    building representation of subway system...'
+# # # 2.3 calculate connectedness
+# # # 2.3.1 generate unique routes
+# trips = read_csv('indata/google_transit/stop_times.txt')
+# ids = trips['trip_id'].unique()
 
-# find midmorning (between 10am and 12pm) trips
-times = []
-for i in range(len(wkd_starts)):
-    time = wkd_starts.iloc[i]['arrival_time'].split(':')
-    time = [int(t) for t in time]
-    times.append(time[0] + (time[1] + (time[2]/60.))/60.)
-times = np.array(times)
-midmorn = np.all([times > 10, times < 12], axis=0)
-starts_midmorn = wkd_starts[midmorn]
+# # find weekday ('WKD') trips
+# starts = trips[trips['stop_sequence']==1]
+# wkd = ['WKD' in i for i in starts['trip_id']]
+# wkd_starts = starts[wkd]
 
-# record all midmorning routes followed, as well as all terminal stops for a
-# given starting stop
-routes = {stop_id:[] for stop_id in starts_midmorn['stop_id']}
-ends = {stop_id:[] for stop_id in starts_midmorn['stop_id']}
-for i in range(len(starts_midmorn)):
-    trip = starts_midmorn.iloc[i]
-    events = trips[trips['trip_id']==trip['trip_id']]
-    start = events['stop_id'].iloc[0]
-    routes[start].append(events['stop_id'])
-    end = events['stop_id'].iloc[-1]
-    if end not in ends[start]:
-        ends[start].append(events['stop_id'].iloc[-1])
+# # find midmorning (between 10am and 12pm) trips
+# times = []
+# for i in range(len(wkd_starts)):
+    # time = wkd_starts.iloc[i]['arrival_time'].split(':')
+    # time = [int(t) for t in time]
+    # times.append(time[0] + (time[1] + (time[2]/60.))/60.)
+# times = np.array(times)
+# midmorn = np.all([times > 10, times < 12], axis=0)
+# starts_midmorn = wkd_starts[midmorn]
 
-# record all pairs of (start,end)
-start_end = []
-for start in ends.keys():
-    for end in ends[start]:
-        start_end.append((start,end))
+# # record all midmorning routes followed, as well as all terminal stops for a
+# # given starting stop
+# routes = {stop_id:[] for stop_id in starts_midmorn['stop_id']}
+# ends = {stop_id:[] for stop_id in starts_midmorn['stop_id']}
+# for i in range(len(starts_midmorn)):
+    # trip = starts_midmorn.iloc[i]
+    # events = trips[trips['trip_id']==trip['trip_id']]
+    # start = events['stop_id'].iloc[0]
+    # routes[start].append(events['stop_id'])
+    # end = events['stop_id'].iloc[-1]
+    # if end not in ends[start]:
+        # ends[start].append(events['stop_id'].iloc[-1])
 
-# record all unique trips for each (start,end) pair
-unique_routes = {pair:[] for pair in start_end}
-for start in routes.keys():
-    for route in routes[start]:
-        route = route.values.tolist()
-        end = route[-1]
-        pair = (start,end)
-        if route not in unique_routes[pair]:
-            unique_routes[pair].append(route)
+# # record all pairs of (start,end)
+# start_end = []
+# for start in ends.keys():
+    # for end in ends[start]:
+        # start_end.append((start,end))
 
-# remove north/south distinction; just use first three letters in stop names;
-# use transfer hub id, not original id
-unique_routes_new = {}
-for pair in unique_routes.keys():
-    start = pair[0][:3]
-    if start in already_in:
-        start = transfer_map[start]
-    end = pair[1][:3]
-    if end in already_in:
-        end = transfer_map[end]
-    pair_new = (start,end)
+# # record all unique trips for each (start,end) pair
+# unique_routes = {pair:[] for pair in start_end}
+# for start in routes.keys():
+    # for route in routes[start]:
+        # route = route.values.tolist()
+        # end = route[-1]
+        # pair = (start,end)
+        # if route not in unique_routes[pair]:
+            # unique_routes[pair].append(route)
 
-    unique_routes_new[pair_new] = []
-    for route in unique_routes[pair]:
-        route_new = []
-        for stop in route:
-            stop = stop[:3]
-            if stop in already_in:
-                stop = transfer_map[stop]
-            route_new.append(stop)
-        unique_routes_new[pair_new].append(route_new)
-unique_routes = unique_routes_new
+# # remove north/south distinction; just use first three letters in stop names;
+# # use transfer hub id, not original id
+# unique_routes_new = {}
+# for pair in unique_routes.keys():
+    # start = pair[0][:3]
+    # if start in already_in:
+        # start = transfer_map[start]
+    # end = pair[1][:3]
+    # if end in already_in:
+        # end = transfer_map[end]
+    # pair_new = (start,end)
 
-print '    tracing rolle connectedness...'
+    # unique_routes_new[pair_new] = []
+    # for route in unique_routes[pair]:
+        # route_new = []
+        # for stop in route:
+            # stop = stop[:3]
+            # if stop in already_in:
+                # stop = transfer_map[stop]
+            # route_new.append(stop)
+        # unique_routes_new[pair_new].append(route_new)
+# unique_routes = unique_routes_new
 
-# # 2.3.2 collect rolle connectedness of each stop
-system = Graph()
-for pair in unique_routes.keys():
-    # filter out staten island routes
-    if pair[0] not in si_ids and pair[1] not in si_ids:
-        for route in unique_routes[pair]:
-            route = np.array(route)
-            edges = np.vstack([route[:-1], route[1:]]).T
-            system.add_nodes_from(route)
-            system.add_edges_from(edges)
+# print '    tracing rolle connectedness...'
 
-# find location of each node as subway stop
-locs = {node:None for node in system.nodes()}
-stop_id = stops['stop_id'].tolist()
-for node in system.nodes():
-    stop = stops[stops['stop_id']==node].iloc[0]
-    locs[node] = stop[['x','y']].values
+# # # 2.3.2 collect rolle connectedness of each stop
+# system = Graph()
+# for pair in unique_routes.keys():
+    # # filter out staten island routes
+    # if pair[0] not in si_ids and pair[1] not in si_ids:
+        # for route in unique_routes[pair]:
+            # route = np.array(route)
+            # edges = np.vstack([route[:-1], route[1:]]).T
+            # system.add_nodes_from(route)
+            # system.add_edges_from(edges)
 
-# alex rolle's connectedness
-def f(layers, n):
-    if n in layers.keys():
-        return len(layers[n])
-    else:
-        return -1
-def s(layers,n):
-    if n < len(layers.keys()):
-        i = n
-        total = 0
-        while i >= 0:
-            total = total + f(layers,i)
-            i = i-1
-        return total
-    else:
-        return -1
-def m(layers):
-    n = len(layers.keys())
-    total = 0
-    i = n-1
-    while i >= 0:
-        total = total + (s(layers,i) - (i+1))
-        i = i-1
-    return total
+# # find location of each node as subway stop
+# locs = {node:None for node in system.nodes()}
+# stop_id = stops['stop_id'].tolist()
+# for node in system.nodes():
+    # stop = stops[stops['stop_id']==node].iloc[0]
+    # locs[node] = stop[['x','y']].values
 
-connectedness = []
-for i in range(len(stops)):
-    stop = stops.iloc[i]
-    start = stop['stop_id']
+# # alex rolle's connectedness
+# def f(layers, n):
+    # if n in layers.keys():
+        # return len(layers[n])
+    # else:
+        # return -1
+# def s(layers,n):
+    # if n < len(layers.keys()):
+        # i = n
+        # total = 0
+        # while i >= 0:
+            # total = total + f(layers,i)
+            # i = i-1
+        # return total
+    # else:
+        # return -1
+# def m(layers):
+    # n = len(layers.keys())
+    # total = 0
+    # i = n-1
+    # while i >= 0:
+        # total = total + (s(layers,i) - (i+1))
+        # i = i-1
+    # return total
 
-    if start in system.nodes():
-        # start = node
-        node = start
-        visited = [start]
-        layers = {0: [start]}
-        i = 0
-        while len(visited) < len(system.nodes()):
-            i = i+1
-            layers[i] = []
-            j = 0
-            while j < len(layers[i-1]):
-                node = layers[i-1][j]
-                neighbors = all_neighbors(system,node)
-                for neighbor in neighbors:
-                    if neighbor not in visited:
-                        visited.append(neighbor)
-                        layers[i].append(neighbor)
-                j = j+1
-        connectedness.append(m(layers))
-    else:
-        connectedness.append(np.nan)
-stops['rolle_connectedness'] = connectedness
+# connectedness = []
+# for i in range(len(stops)):
+    # stop = stops.iloc[i]
+    # start = stop['stop_id']
 
-print '    tracting graph-theoretic connectedness...'
+    # if start in system.nodes():
+        # # start = node
+        # node = start
+        # visited = [start]
+        # layers = {0: [start]}
+        # i = 0
+        # while len(visited) < len(system.nodes()):
+            # i = i+1
+            # layers[i] = []
+            # j = 0
+            # while j < len(layers[i-1]):
+                # node = layers[i-1][j]
+                # neighbors = all_neighbors(system,node)
+                # for neighbor in neighbors:
+                    # if neighbor not in visited:
+                        # visited.append(neighbor)
+                        # layers[i].append(neighbor)
+                # j = j+1
+        # connectedness.append(m(layers))
+    # else:
+        # connectedness.append(np.nan)
+# stops['rolle_connectedness'] = connectedness
 
-# # 2.3.3 graph-theoretic connectedness
-# sigma.p is simply the output of nx.all_pairs_node_connectivity_matrix(system);
-# it takes a long time to calculate
-sigma = pickle.load(open('save/sigma.p','rb'))
-sigma = np.mean(sigma,axis=1)
+# print '    tracting graph-theoretic connectedness...'
 
-stops['graph_connectedness'] = np.tile(np.nan,len(stops))
-stops['graph_connectedness'] = stops['graph_connectedness'].astype('float32')
+# # # 2.3.3 graph-theoretic connectedness
+# # sigma.p is simply the output of nx.all_pairs_node_connectivity_matrix(system);
+# # it takes a long time to calculate
+# sigma = pickle.load(open('save/sigma.p','rb'))
+# sigma = np.mean(sigma,axis=1)
 
-nodes = system.nodes()
-for i in range(len(nodes)):
-    node = nodes[i]
-    index = np.where(stops['stop_id']==node)[0][0]
-    stops['graph_connectedness'].iloc[index] = sigma[i]
+# stops['graph_connectedness'] = np.tile(np.nan,len(stops))
+# stops['graph_connectedness'] = stops['graph_connectedness'].astype('float32')
 
-print "OK"
+# nodes = system.nodes()
+# for i in range(len(nodes)):
+    # node = nodes[i]
+    # index = np.where(stops['stop_id']==node)[0][0]
+    # stops['graph_connectedness'].iloc[index] = sigma[i]
 
-print "loading census tracts and income data..."
-
-# # 2.4 income data
-# read in census income data
-incomes = read_csv('save/median')
-for i in range(len(incomes)):
-    tract = incomes.ix[i]
-    geoid = tract['GEOID']
-    geoid = geoid.split('US')[1]
-    incomes['GEOID'].ix[i] = geoid
-
-# load TIGER census tract geometries
-tract_polygons = []
-geoids = []
-with fiona.open('indata/tiger/tl_2011_36_tract.shp','r') as source:
-    p1 = Proj({'proj':'longlat', 'datum':'WGS84'})
-    p2 = Proj({'proj':'aea', 'datum':'WGS84', 'lon_0':'-96'})
-    for shape in source:
-        if shape['properties']['GEOID'] in incomes['GEOID'].values:
-            subshape = shape['geometry']['coordinates'][0]
-            p1_points = np.array(subshape)
-            p2_points = transform(p1,p2,p1_points[:,0],p1_points[:,1])
-            p2_points = np.array(p2_points).T
-
-            tract_polygons.append(Polygon(p2_points))
-            geoids.append(shape['properties']['GEOID'])
-
-tracts = GeoDataFrame(index=range(len(tract_polygons)))
-tracts['region'] = tract_polygons
-tracts['geoid'] = geoids
-tracts['income'] = np.tile(np.nan, len(tracts))
-
-# match census tract geometry with income data
-for i in range(len(tracts)):
-    tract = tracts.iloc[i]
-    income = incomes[incomes['GEOID'] == tract['geoid']].iloc[0]['MEDIAN_INCOME']
-    tracts['income'].iloc[i] = income
-
-stops_list = stops['region'].tolist()
-tracts_list = tracts['region'].tolist()
-tract_sets = []
-for i in range(len(stops_list)):
-    stop = stops_list[i]
-    contains = []
-    for j in range(len(tracts_list)):
-        tract = tracts_list[j]
-        if stop.intersects(tract):
-            intersection = (stop.intersection(tract))
-            contains.append((intersection.area,tracts.iloc[j]['income']))
-    tract_sets.append(contains)
-
-# set income for each subway stop to be average median household income,
-# weighted by proportion of total area represented by each tract
-stops['income'] = np.tile(np.nan, len(stops))
-for i in range(len(stops)):
-    stop = stops.iloc[i]
-    tract_set = np.array(tract_sets[i])
-
-    total = np.sum(tract_set[:,0])
-    weights = tract_set[:,0] / total
-    weighted_incomes = tract_set[:,1]*weights
-    income = np.sum(weighted_incomes)
-
-    stops['income'].iloc[i] = income
-
-# log income
-stops['lincome'] = np.log(stops['income'])
-
+# print "OK"
 
 # # 2.6 Add borough categorical variable
 stops['borough'] = np.tile(np.nan,len(stops))
@@ -506,5 +438,5 @@ stops.index = range(len(stops))
 
 # # save for later use
 pickle.dump(stops,open('save/stops.p','wb'))
-pickle.dump(system,open('save/system.p','wb'))
+# pickle.dump(system,open('save/system.p','wb'))
 pickle.dump(nyc,open('save/nyc.p','wb'))
