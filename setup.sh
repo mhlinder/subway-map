@@ -63,3 +63,11 @@ awk -F, 'FNR==NR{
                 {locs[$5]=$49}}
             {if ($6 in locs && $130 !~ /\./)
                 {print locs[$6] "," $7}}' $geo_file $est_file >> $save
+
+
+# save TIGER data---this is tracked with github, but corresponds to the new
+# york state 2011 census tract file from the US census
+# see http://www.census.gov/geo/maps-data/data/tiger-line.html
+unzip tl_2011_36_tract.zip
+mkdir tiger
+mv tl_2011_36_tract.* tiger
