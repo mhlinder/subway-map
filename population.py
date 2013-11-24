@@ -8,9 +8,10 @@ import matplotlib.pyplot as plt
 
 import pickle
 
+from utils import nyc_boundary()
 
-# # 2.5 population data
-# read in census populatio data
+# # population data
+# read in census population data
 pops = read_csv('save/population')
 for i in range(len(pops)):
     tract = pops.ix[i]
@@ -44,10 +45,14 @@ tracts['region'] = tract_polygons
 tracts['geoid'] = geoids
 tracts['population'] = np.tile(np.nan, len(tracts))
 tracts['area'] = np.tile(np.nan, len(tracts))
+tracts.index = range(len(tracts))
 
-nyc = pickle.load(open('save/nyc.p','rb'))
+# # trim tracts to nyc
+# read in nyc boundary
+nyc = nyc_boundary()
 
 areas = []
+print 'Trimming tracts...'
 for i in range(len(tracts)):
     if i % 100 == 0:
         print i 
@@ -63,7 +68,6 @@ for i in range(len(tracts)):
 tracts['area'] = areas
 tracts['larea'] = np.log(tracts['area'])
 
-
 # match census tract geometry with population data
 for i in range(len(tracts)):
     tract = pops.iloc[i]
@@ -78,19 +82,3 @@ tracts['lpop_dens'] = np.log(tracts['pop_dens'])
 tracts = tracts[ tracts['population']!=0 ]
 
 pickle.dump(tracts,open('save/tracts.p','wb'))
-
-# plot
-fig = plt.figure(1,dpi=540,frameon=False)
-fig.set_size_inches(24,24)
-ax = fig.add_subplot(111)
-ax.axis('off')
-
-for i in range(len(tracts)):
-    tract = tracts.iloc[i]
-    minx,miny,maxx,maxy=tract['region'].bounds
-    bbox = box(minx,miny,maxx,maxy)
-    plt.plot(bbox.exterior.xy[0],bbox.exterior.xy[1],'k-')
-
-outname = 'save/plots/bboxes.png'
-plt.savefig(outname)
-plt.close()
