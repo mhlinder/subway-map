@@ -5,3 +5,4 @@ reference
 Old/
 *.p
 save/
+*.pyc
