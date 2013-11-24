@@ -403,7 +403,7 @@ for i in range(len(stops)):
         connectedness.append(np.nan)
 stops['rolle_connectedness'] = connectedness
 
-print '    tracting graph-theoretic connectedness...'
+print '    tracing graph-theoretic connectedness...'
 
 # # 2.3.3 graph-theoretic connectedness
 # sigma.p is simply the output of nx.all_pairs_node_connectivity_matrix(system);
