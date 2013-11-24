@@ -1,7 +1,5 @@
 import numpy as np
-def corr(x,y,k):
-    print 'lag: %i' % k
-
+def corr(x,y,k=0):
     if k > 0:
         x = x[:-k]
         y = y[k:]
@@ -14,4 +12,5 @@ def corr(x,y,k):
     ybar = np.mean(y)
     r = np.sum( (x-xbar)*(y-ybar) ) / np.sqrt(sum( (x-xbar)**2 ) * sum(
         (y-ybar)**2 ))
-    print r
+    
+    return r
