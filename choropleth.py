@@ -5,7 +5,7 @@ from descartes import PolygonPatch
 import numpy as np
 
 # stops = pickle.load(open('save/stops_pop.p','rb'))
-stops = pickle.load(open('save/tracts.p','rb'))
+tracts = pickle.load(open('save/tracts.p','rb'))
 
 measure = 'lpop_dens'
 outname = 'save/plots/choropleth_' + measure + '.png'
@@ -22,12 +22,12 @@ ax.axis('off')
 # calculate percentiles for binning area
 q = float(100)/6
 qs = q*np.arange(7)
-qs = np.percentile(stops[measure], qs.tolist())
+qs = np.percentile(tracts[measure], qs.tolist())
 qs = np.vstack([qs[:-1], qs[1:]]).T
 
 # 'Blues' colorscheme from colorbrewer2.org; ascending from white to blue
 colors = ['#EFF3FF', '#C6DBEF', '#9ECAE1', '#6BAED6', '#3182BD', '#08519C']
-for row in stops.iterrows():
+for row in tracts.iterrows():
     row = row[1]
     if not np.isnan(row[measure]):
         polygon = row['region']
@@ -52,16 +52,6 @@ nyc = pickle.load(open('save/nyc.p','rb'))
 for clip in nyc:
     x, y = clip.exterior.xy
     ax.plot(x, y, color="#000000", linewidth=1, zorder=2)
-
-# system = pickle.load(open('save/system.p','rb'))
-# for edge in system.edges():
-    # stop1 = stops[stops['stop_id']==edge[0]].iloc[0]
-    # stop2 = stops[stops['stop_id']==edge[1]].iloc[0]
-    # x1,y1 = stop1[['x','y']].values
-    # x2,y2 = stop2[['x','y']].values
-    # x = [x1,x2]
-    # y = [y1,y2]
-    # # plt.plot(x,y,'k',zorder=2)
 
 plt.savefig(outname)
 plt.close()
