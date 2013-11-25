@@ -51,6 +51,8 @@ for i in range(len(tracts)):
     tracts['y'].iloc[i] = (b+t)/2
 
 # match with closest stops
+tracts['distn1'] = np.tile(np.nan,len(tracts))
+tracts['distn2'] = np.tile(np.nan,len(tracts))
 tracts['v_area'] = np.tile(np.nan,len(tracts))
 tracts['v_larea'] = np.tile(np.nan,len(tracts))
 tracts['rolle_connectedness'] = np.tile(np.nan,len(tracts))
@@ -64,6 +66,10 @@ for i in range(len(tracts)):
 
     left,bottom,right,top = tract['region'].bounds
     distances, indices = nbrs.kneighbors(tract[['x','y']].values)
+    distances = distances[0]
+    tracts['distn1'].iloc[i] = distances[0]
+    tracts['distn2'].iloc[i] = distances[1]
+
     tract_stops = stops.iloc[indices[0]]
 
     tracts['v_area'].iloc[i] = np.mean(tract_stops['v_area'])
