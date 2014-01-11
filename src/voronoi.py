@@ -42,7 +42,7 @@ print "OK"
 print "loading subway stops..."
 
 # # 2. Subway stops data
-stops = read_csv('indata/google_transit/stops.txt')
+stops = read_csv('../data/indata/google_transit/stops.txt')
 stops = stops[stops['location_type']==1]
 # staten island is technically the staten island railroad, NOT part of the
 # subway system
@@ -117,7 +117,7 @@ print "OK"
 print "collapsing transfers..."
 
 # # 2.2 collapse all transfers into single stops
-transfers = read_csv('indata/google_transit/transfers.txt')
+transfers = read_csv('../data/indata/google_transit/transfers.txt')
 # find all stations that involve transfers
 already_in = []
 transfer_stops = []
@@ -208,7 +208,7 @@ print 'calculating connectedness...'
 print '    building representation of subway system...'
 # # 2.3 calculate connectedness
 # # 2.3.1 generate unique routes
-trips = read_csv('indata/google_transit/stop_times.txt')
+trips = read_csv('../data/indata/google_transit/stop_times.txt')
 ids = trips['trip_id'].unique()
 
 # find weekday ('WKD') trips
@@ -384,6 +384,6 @@ for i in range(len(stops)):
 stops.index = range(len(stops))
 
 # # save for later use
-pickle.dump(stops,open('save/stops.p','wb'))
-pickle.dump(system,open('save/system.p','wb'))
-pickle.dump(nyc,open('save/nyc.p','wb'))
+pickle.dump(stops,open('data/save/stops.p','wb'))
+pickle.dump(system,open('data/save/system.p','wb'))
+pickle.dump(nyc,open('data/save/nyc.p','wb'))
