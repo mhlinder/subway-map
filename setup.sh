@@ -26,6 +26,16 @@ wget http://www2.census.gov/acs2011_5yr/summaryfile/2007-2011_ACSSF_By_State_By_
 unzip 20115ny0056000.zip
 wget http://www2.census.gov/acs2011_5yr/summaryfile/2007-2011_ACSSF_By_State_By_Sequence_Table_Subset/NewYork/Tracts_Block_Groups_Only/20115ny0002000.zip
 unzip 20115ny0002000.zip
+wget http://www2.census.gov/acs2011_5yr/summaryfile/2007-2011_ACSSF_By_State_By_Sequence_Table_Subset/NewYork/Tracts_Block_Groups_Only/20115ny0028000.zip
+unzip 20115ny0028000.zip
+wget http://www2.census.gov/acs2011_5yr/summaryfile/2007-2011_ACSSF_By_State_By_Sequence_Table_Subset/NewYork/Tracts_Block_Groups_Only/20115ny0113000.zip
+unzip 20115ny0113000.zip
+wget http://www2.census.gov/acs2011_5yr/summaryfile/2007-2011_ACSSF_By_State_By_Sequence_Table_Subset/NewYork/Tracts_Block_Groups_Only/20115ny0003000.zip
+unzip 20115ny0003000.zip
+wget http://www2.census.gov/acs2011_5yr/summaryfile/2007-2011_ACSSF_By_State_By_Sequence_Table_Subset/NewYork/Tracts_Block_Groups_Only/20115ny0099000.zip
+unzip 20115ny0099000.zip
+wget http://www2.census.gov/acs2011_5yr/summaryfile/2007-2011_ACSSF_By_State_By_Sequence_Table_Subset/NewYork/Tracts_Block_Groups_Only/20115ny0100000.zip
+unzip 20115ny0100000.zip
 wget http://www2.census.gov/acs2011_5yr/summaryfile/2007-2011_ACSSF_By_State_By_Sequence_Table_Subset/NewYork/Tracts_Block_Groups_Only/g20115ny.csv
 wget http://www2.census.gov/acs2011_5yr/summaryfile/2007-2011_ACSSF_By_State_By_Sequence_Table_Subset/NewYork/Tracts_Block_Groups_Only/g20115ny.txt
 wget http://www2.census.gov/acs2011_5yr/summaryfile/Sequence_Number_and_Table_Number_Lookup.txt
@@ -56,6 +66,17 @@ awk -F, 'FNR==NR{
 # total population (table b01003)
 est_file=$data_dir'e20115ny0002000.txt'
 save='save/population'
+
+echo 'GEOID,POPULATION' > $save
+awk -F, 'FNR==NR{
+            if ($3 ~ 140 && $51 ~ /(Bronx|Kings|New York|Queens) County/)
+                {locs[$5]=$49}}
+            {if ($6 in locs && $130 !~ /\./)
+                {print locs[$6] "," $130}}' $geo_file $est_file >> $save
+
+# means of transportation to work (table b08301)
+est_file=$data_dir'e20115ny0002000.txt'
+save='save/means_of_transportation'
 
 echo 'GEOID,POPULATION' > $save
 awk -F, 'FNR==NR{
