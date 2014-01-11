@@ -1,6 +1,5 @@
-indata/
+data/
 *.swp
 .DS*
 *.p
-save/
 *.pyc
