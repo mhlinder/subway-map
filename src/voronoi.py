@@ -63,6 +63,8 @@ for dupe in dupes:
 
 # project stop locations into Albers Equal Area
 stops_pts = np.array(stops[['stop_lon','stop_lat']])
+p2 = Proj({'proj':'longlat', 'datum':'WGS84'})
+p3 = Proj({'proj':'aea', 'datum':'WGS84', 'lon_0':'-96'})
 stops_pts = transform(p2, p3, stops_pts[:,0], stops_pts[:,1])
 stops_pts = np.vstack([stops_pts[0], stops_pts[1]]).T
 # save aea-projected location

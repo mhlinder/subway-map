@@ -1,5 +1,4 @@
 data/
 *.swp
 .DS*
-*.p
 *.pyc
