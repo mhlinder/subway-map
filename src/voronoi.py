@@ -358,7 +358,7 @@ print '    tracing graph-theoretic connectedness...'
 # # 2.3.3 graph-theoretic connectedness
 # sigma.p is simply the output of nx.all_pairs_node_connectivity_matrix(system);
 # it takes a long time to calculate
-sigma = pickle.load(open('save/sigma.p','rb'))
+sigma = pickle.load(open('../data/save/sigma.p','r'))
 sigma = np.mean(sigma,axis=1)
 
 stops['graph_connectedness'] = np.tile(np.nan,len(stops))
@@ -386,6 +386,6 @@ for i in range(len(stops)):
 stops.index = range(len(stops))
 
 # # save for later use
-pickle.dump(stops,open('data/save/stops.p','wb'))
-pickle.dump(system,open('data/save/system.p','wb'))
-pickle.dump(nyc,open('data/save/nyc.p','wb'))
+pickle.dump(stops,open('../data/save/stops.p','wb'))
+pickle.dump(system,open('../data/save/system.p','wb'))
+pickle.dump(nyc,open('../data/save/nyc.p','wb'))
