@@ -1,7 +1,4 @@
-indata/
+data/
 *.swp
 .DS*
-reference
-Old/
-*.p
-save/
+*.pyc
