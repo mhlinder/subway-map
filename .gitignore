@@ -1,4 +1,4 @@
-data/
+indata/
 *.swp
 .DS*
 *.pyc
