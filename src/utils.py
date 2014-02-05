@@ -24,7 +24,7 @@ def nyc_boundary():
     # maps BoroCode to categorical
     borough_names = {5:'SI',4:'Q',3:'BK',1:'M',2:'BX'}
     
-    with fiona.open('../data/indata/nybb_13a/nybb.shp','r') as source:
+    with fiona.open('data/indata/nybb_13a/nybb.shp','r') as source:
         # set up three projection types: boundary data start; google-standard
         # lat/lon, using WGS84; Albers Equal Area
         p1 = Proj(source.crs,preserve_units=True)

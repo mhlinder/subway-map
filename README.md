@@ -2,9 +2,7 @@ NYC Subway Station Voronoi
 ==========================
 Incorporating data from MTA's
 [developer](http://web.mta.info/developers/download.html) website and
-the Census (see branches for additions to the code).
-![area
-choropleth](https://raw.github.com/mhlinder/subway-map/master/save/choropleth.png)
+the Census.
 
 Required Python libraries:
 * **fiona** (read OGR)

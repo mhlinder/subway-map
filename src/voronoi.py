@@ -42,7 +42,7 @@ print "OK"
 print "loading subway stops..."
 
 # # 2. Subway stops data
-stops = read_csv('../data/indata/google_transit/stops.txt')
+stops = read_csv('data/indata/google_transit/stops.txt')
 stops = stops[stops['location_type']==1]
 # staten island is technically the staten island railroad, NOT part of the
 # subway system
@@ -119,7 +119,7 @@ print "OK"
 print "collapsing transfers..."
 
 # # 2.2 collapse all transfers into single stops
-transfers = read_csv('../data/indata/google_transit/transfers.txt')
+transfers = read_csv('data/indata/google_transit/transfers.txt')
 # find all stations that involve transfers
 already_in = []
 transfer_stops = []
@@ -166,10 +166,10 @@ for stop in already_in:
 concatted = []
 for transfer in transfer_stops:
     # find all to be combined
-    combine = np.any([stops['stop_id'] == stop_id for stop_id in transfer],axis=0)
+    combine = np.any(np.vstack([stops['stop_id'] == stop_id for stop_id in transfer]).T,axis=1)
     concat = stops[combine]
     # remove all those that will be combined
-    omit = np.all([stops['stop_id'] != stop_id for stop_id in transfer],axis=0)
+    omit = np.all(np.vstack([stops['stop_id'] != stop_id for stop_id in transfer]).T,axis=1)
     stops = stops[omit]
 
     # add a new data frame concatenating all of them
@@ -210,7 +210,7 @@ print 'calculating connectedness...'
 print '    building representation of subway system...'
 # # 2.3 calculate connectedness
 # # 2.3.1 generate unique routes
-trips = read_csv('../data/indata/google_transit/stop_times.txt')
+trips = read_csv('data/indata/google_transit/stop_times.txt')
 ids = trips['trip_id'].unique()
 
 # find weekday ('WKD') trips
@@ -358,7 +358,7 @@ print '    tracing graph-theoretic connectedness...'
 # # 2.3.3 graph-theoretic connectedness
 # sigma.p is simply the output of nx.all_pairs_node_connectivity_matrix(system);
 # it takes a long time to calculate
-sigma = pickle.load(open('../data/save/sigma.p','r'))
+sigma = pickle.load(open('data/save/sigma.p','r'))
 sigma = np.mean(sigma,axis=1)
 
 stops['graph_connectedness'] = np.tile(np.nan,len(stops))
@@ -386,6 +386,6 @@ for i in range(len(stops)):
 stops.index = range(len(stops))
 
 # # save for later use
-pickle.dump(stops,open('../data/save/stops.p','wb'))
-pickle.dump(system,open('../data/save/system.p','wb'))
-pickle.dump(nyc,open('../data/save/nyc.p','wb'))
+pickle.dump(stops,open('data/save/stops.p','wb'))
+pickle.dump(system,open('data/save/system.p','wb'))
+pickle.dump(nyc,open('data/save/nyc.p','wb'))
