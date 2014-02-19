@@ -18,3 +18,6 @@ ACS: datadir
 
 voronoi: data
 	python src/voronoi.py
+
+choropleth: voronoi
+	python src/choropleth.py
