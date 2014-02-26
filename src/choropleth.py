@@ -7,10 +7,11 @@ import numpy as np
 stops = pickle.load(open('data/save/stops.p','rb'))
 # tracts = pickle.load(open('save/tracts.p','rb'))
 
-measures = ['lpop_dens','lincome','graph_connectedness','v_larea']
+# measures = ['lpop_dens','lincome','graph_connectedness','v_larea']
+measures = ['v_larea']
 
 for measure in measures:
-    outname = 'save/plots/choropleth_' + measure + '.png'
+    outname = 'data/plots/choropleth_' + measure + '.png'
     
     # Plotting
     # # This is a choropleth according to area
@@ -24,12 +25,12 @@ for measure in measures:
     # calculate percentiles for binning area
     q = float(100)/6
     qs = q*np.arange(7)
-    qs = np.percentile(tracts[measure], qs.tolist())
+    qs = np.percentile(stops[measure], qs.tolist())
     qs = np.vstack([qs[:-1], qs[1:]]).T
     
     # 'Blues' colorscheme from colorbrewer2.org; ascending from white to blue
     colors = ['#EFF3FF', '#C6DBEF', '#9ECAE1', '#6BAED6', '#3182BD', '#08519C']
-    for row in tracts.iterrows():
+    for row in stops.iterrows():
         row = row[1]
         if not np.isnan(row[measure]):
             polygon = row['region']
@@ -50,7 +51,7 @@ for measure in measures:
                     ax.add_patch(PolygonPatch(subpolygon,facecolor=c,edgecolor="#000000"))
     
     
-    nyc = pickle.load(open('save/nyc.p','rb'))
+    nyc = pickle.load(open('data/save/nyc.p','rb'))
     for clip in nyc:
         x, y = clip.exterior.xy
         ax.plot(x, y, color="#000000", linewidth=1, zorder=2)

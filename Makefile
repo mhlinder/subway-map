@@ -1,4 +1,4 @@
-all: data voronoi
+all: datadir data voronoi
 
 
 data: nybb_13a google_transit ACS
@@ -6,18 +6,18 @@ data: nybb_13a google_transit ACS
 datadir:
 	mkdir -p data/indata/ data/save/
 
-nybb_13a: datadir
+nybb_13a:
 	src/indata/nybb_13a.sh
 
-google_transit: datadir
+google_transit:
 	src/indata/google_transit.sh
 
-ACS: datadir
+ACS:
 	src/indata/ACS.sh
 
 
-voronoi: data
+voronoi:
 	python src/voronoi.py
 
-choropleth: voronoi
+choropleth:
 	python src/choropleth.py
