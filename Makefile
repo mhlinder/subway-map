@@ -21,3 +21,6 @@ voronoi:
 
 choropleth:
 	python src/choropleth.py
+
+population:
+	python src/population.py
