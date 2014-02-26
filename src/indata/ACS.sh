@@ -20,5 +20,6 @@ unzip 20115ny0100000.zip
 curl -O http://www2.census.gov/acs2011_5yr/summaryfile/2007-2011_ACSSF_By_State_By_Sequence_Table_Subset/NewYork/Tracts_Block_Groups_Only/g20115ny.csv
 curl -O http://www2.census.gov/acs2011_5yr/summaryfile/2007-2011_ACSSF_By_State_By_Sequence_Table_Subset/NewYork/Tracts_Block_Groups_Only/g20115ny.txt
 curl -O http://www2.census.gov/acs2011_5yr/summaryfile/Sequence_Number_and_Table_Number_Lookup.txt
+curl -O http://www2.census.gov/acs2011_5yr/summaryfile/ACS_2007-2011_SF_Tech_Doc.pdf
 rm *.zip
 cd ../../..

@@ -13,14 +13,3 @@ area" for each subway station in the MTA transit system (excluding Staten
 Island). These areas are subsequently matched to Census data to get
 a picture of the demographic distribution of New York City relative to its
 transit system.
-
-Required Python libraries:
-* **fiona** (read OGR)
-* **geopandas** (extend `pandas` for `shapely` data)
-* **matplotlib** (plotting)
-* **numpy** (arrays)
-* **pandas** (dataframes)
-* **pyproj** (transform map projections)
-* **scipy** (Voronoi)
-* **shapely** (geometric objects)
-* **pickle** (saving and loading data)
