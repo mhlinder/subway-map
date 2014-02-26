@@ -1,4 +1,5 @@
 key = '7d931307fc4b79ea45022d7b729e3b25b90787b2'
+import pickle
 import requests
 import numpy as np
 from pandas import DataFrame, Series, concat
@@ -137,4 +138,4 @@ df['60-90_commute'] = dfs['travel_time']['60-89'] / dfs['travel_time']['total']
 df['>90_commute'] = dfs['travel_time']['90-'] / dfs['travel_time']['total']
 
 
-df.pickle(open('data/save/census.p','wb'), df)
+pickle.save(open('data/save/census.p','wb'), df)

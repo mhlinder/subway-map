@@ -16,7 +16,7 @@ for measure in measures:
     # Plotting
     # # This is a choropleth according to area
     fig = plt.figure(1,dpi=540,frameon=False)
-    plt.title(measure)
+    # plt.title(measure)
     ax = fig.add_subplot(111)
     
     fig.set_size_inches(24,24)

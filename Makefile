@@ -22,5 +22,5 @@ voronoi:
 choropleth:
 	python src/choropleth.py
 
-population:
-	python src/population.py
+census:
+	python src/census_request.py
