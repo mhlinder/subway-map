@@ -4,14 +4,15 @@ from geopandas import GeoDataFrame, GeoSeries
 from descartes import PolygonPatch
 import numpy as np
 
-stops = pickle.load(open('data/save/stops.p','rb'))
-# tracts = pickle.load(open('save/tracts.p','rb'))
+# stops = pickle.load(open('data/save/stops.p','rb'))
+# hacked to plot tracts, instead
+stops = pickle.load(open('data/save/tracts.p','rb'))
 
 # measures = ['lpop_dens','lincome','graph_connectedness','v_larea']
-measures = ['v_larea']
+measures = ['larea']
 
 for measure in measures:
-    outname = 'data/plots/choropleth_' + measure + '.png'
+    outname = 'data/plots/choropleth_tracts_' + measure + '.png'
     
     # Plotting
     # # This is a choropleth according to area

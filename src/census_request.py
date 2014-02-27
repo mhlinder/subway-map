@@ -138,4 +138,4 @@ df['60-90_commute'] = dfs['travel_time']['60-89'] / dfs['travel_time']['total']
 df['>90_commute'] = dfs['travel_time']['90-'] / dfs['travel_time']['total']
 
 
-pickle.save(open('data/save/census.p','wb'), df)
+pickle.dump(df, open('data/save/census.p','wb'))
