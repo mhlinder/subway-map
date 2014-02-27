@@ -16,9 +16,6 @@ google_transit:
 voronoi:
 	python src/voronoi.py
 
-choropleth:
-	python src/choropleth.py
-
 
 ACS:
 	src/indata/ACS.sh
@@ -31,3 +28,6 @@ census:
 
 tract_match:
 	python src/tract_match.py
+
+tracts_stops:
+	python src/tracts_stops.py
