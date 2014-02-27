@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://d3js.org/queue.v1.min.js"></script>
+
+<script>
+var w = 800,
+    h = 600;
+
+var proj = d3.geo.projection(function(x,y) {return [x,y];})
+                    .translate([w/2, h/2]);
+var path = d3.geo.path().projection(proj);
+
+var svg = d3.select("body").append("svg")
+    .attr("width", w)
+    .attr("height", h);
+
+queue()
+    .defer(d3.json, "test.json")
+    .await(ready);
+
+function ready(error, nyc) {
+    svg.append("g")
+        .attr("class", "tracts")
+      .selectAll("path")
+        .data(nyc.features)
+      .enter().append("path")
+        .attr("d", path)
+        .style("stroke", "black")
+        .style("fill", "white");
+}
+</script>
+
+</body>
+</html>

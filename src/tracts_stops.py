@@ -40,8 +40,9 @@ for i in range(len(tracts)):
     for n in new:
         tracts[n].iloc[i] = dot(w, neighbors[n])
 
-from src.utils import choropleth
+pickle.dump(tracts, open('data/save/tracts.p', 'wb'))
 
-for measure in ['v_larea']:
-    if measure not in ['region', 'id']:
-        choropleth(tracts, measure, stops)
+# from src.utils import choropleth
+# for measure in ['v_larea']:
+    # if measure not in ['region', 'id']:
+        # choropleth(tracts, measure, stops)
