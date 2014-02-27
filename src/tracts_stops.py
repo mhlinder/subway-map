@@ -1,5 +1,5 @@
 import pickle
-from numpy import array, vstack, mean, tile, nan, dot
+from numpy import array, vstack, mean, tile, nan, dot, log
 from scipy.spatial import KDTree
 
 stops = pickle.load(open('data/save/stops.p', 'rb'))
@@ -16,6 +16,7 @@ new = ['v_area', 'v_larea', 'rolle_connectedness', 'graph_connectedness']
 for n in new:
     tracts[n] = tile(nan, len(tracts))
 
+# find subway station nearest to tract
 for i in range(len(tracts)):
     tract = tracts.iloc[i]
 
@@ -25,7 +26,7 @@ for i in range(len(tracts)):
     x = mean([x1, x2])
     y = mean([y1, y2])
 
-    d, ix = tree.query([x, y], k=2)
+    d, ix = tree.query([x, y], k=3)
 
     # distance weights
     w = d / sum(d)
@@ -35,3 +36,10 @@ for i in range(len(tracts)):
     for n in new:
         tracts[n].iloc[i] = dot(w, neighbors[n])
 
+from src.utils import choropleth
+tracts['lrolle'] = log(tracts['rolle_connectedness'])
+tracts['lgraph'] = log(tracts['graph_connectedness'])
+
+# for measure in new:
+for measure in ['lrolle', 'lgraph']:
+    choropleth(tracts, measure)
