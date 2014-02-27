@@ -55,9 +55,9 @@ def choropleth(df, measure, stops):
         x, y = clip.exterior.xy
         ax.plot(x, y, color="#000000", linewidth=1, zorder=2)
     
-    for i in range(len(stops)):
-        stop = stops.iloc[i]
-        ax.plot(stop['x'], stop['y'], 'ro')
+    # for i in range(len(stops)):
+        # stop = stops.iloc[i]
+        # ax.plot(stop['x'], stop['y'], 'ro')
 
     
     outname = 'data/plots/choropleth_tracts_' + measure + '.png'
