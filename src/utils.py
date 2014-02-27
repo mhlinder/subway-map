@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from geopandas import GeoDataFrame, GeoSeries
 from descartes import PolygonPatch
 
-def choropleth(df, measure):
+def choropleth(df, measure, stops):
     # Plotting
     # # This is a choropleth according to area
     fig = plt.figure(1,dpi=540,frameon=False)
@@ -19,13 +19,16 @@ def choropleth(df, measure):
     ax.axis('off')
     
     # calculate percentiles for binning area
-    q = float(100)/6
-    qs = q*np.arange(7)
+    # q = float(100)/6
+    # qs = q*np.arange(7)
+    q = float(100)/4
+    qs = q*np.arange(5)
     qs = np.percentile(df[measure], qs.tolist())
     qs = np.vstack([qs[:-1], qs[1:]]).T
     
     # 'Blues' colorscheme from colorbrewer2.org; ascending from white to blue
-    colors = ['#EFF3FF', '#C6DBEF', '#9ECAE1', '#6BAED6', '#3182BD', '#08519C']
+    # colors = ['#EFF3FF', '#C6DBEF', '#9ECAE1', '#6BAED6', '#3182BD', '#08519C']
+    colors = ['#EFF3FF', '#C6DBEF', '#3182BD', '#08519C']
     for row in df.iterrows():
         row = row[1]
         if not np.isnan(row[measure]):
@@ -51,6 +54,11 @@ def choropleth(df, measure):
     for clip in nyc:
         x, y = clip.exterior.xy
         ax.plot(x, y, color="#000000", linewidth=1, zorder=2)
+    
+    for i in range(len(stops)):
+        stop = stops.iloc[i]
+        ax.plot(stop['x'], stop['y'], 'ro')
+
     
     outname = 'data/plots/choropleth_tracts_' + measure + '.png'
     plt.savefig(outname)

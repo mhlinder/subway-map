@@ -26,10 +26,14 @@ for i in range(len(tracts)):
     x = mean([x1, x2])
     y = mean([y1, y2])
 
-    d, ix = tree.query([x, y], k=3)
+    k = 1
+    d, ix = tree.query([x, y], k=k)
 
     # distance weights
-    w = d / sum(d)
+    if k == 1:
+        w = 1
+    else:
+        w = d / sum(d)
 
     neighbors = stops.iloc[ix]
     
@@ -37,9 +41,7 @@ for i in range(len(tracts)):
         tracts[n].iloc[i] = dot(w, neighbors[n])
 
 from src.utils import choropleth
-tracts['lrolle'] = log(tracts['rolle_connectedness'])
-tracts['lgraph'] = log(tracts['graph_connectedness'])
 
-# for measure in new:
-for measure in ['lrolle', 'lgraph']:
-    choropleth(tracts, measure)
+for measure in ['v_larea']:
+    if measure not in ['region', 'id']:
+        choropleth(tracts, measure, stops)
