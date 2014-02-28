@@ -1,6 +1,31 @@
 <!DOCTYPE html>
 <html>
 
+<style>
+body {
+    background-color: #557882;
+}
+
+.main {
+    display: block;
+    background-color: #557882;
+    margin: auto;
+}
+.tracts, .stops {
+    stroke: #5B5A53;
+}
+
+.q0 { fill: #C1BEAF; }
+.q1 { fill: #75736A; }
+.q2 { fill: #42413C; }
+.q3 { fill: #353430; }
+
+.stops {
+    fill: #DBC76F;
+}
+
+</style>
+
 <body>
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="http://d3js.org/queue.v1.min.js"></script>
@@ -8,31 +33,37 @@
 
 <script>
 var w = 800,
-    h = 600;
+    h = 750;
 
-//var proj = d3.geo.projection(function(x,y) {return [x,y];})
-//                    .translate([w/2, h/2])
-//                    .scale(500);
-var path = d3.geo.path().projection(null);
+var color = d3.scale.quantize()
+                .domain([11.4, 17.9])
+                .range(['q0', 'q1', 'q2', 'q3']);
+
+var path = d3.geo.path().projection(null).pointRadius(2.5);
 
 var svg = d3.select("body").append("svg")
     .attr("width", w)
-    .attr("height", h);
+    .attr("height", h)
+    .attr("class", "main");
 
-queue()
-    .defer(d3.json, "v_larea.topojson")
-    .await(ready);
-
-function ready(error, nyc) {
+d3.json('data.topojson', function (error, nyc) {
     svg.append("g")
         .attr("class", "tracts")
       .selectAll("path")
-        .data(topojson.feature(nyc, nyc.objects.v_larea).features)
+        .data(topojson.feature(nyc, nyc.objects.tracts).features)
       .enter().append("path")
-        .attr("d", path)
-        .style("stroke", "black")
-        .style("fill", "white");
-}
+        .attr("class", function(d) { return color(d.properties.area); })
+        .attr("d", path);
+
+    svg.append("g")
+        .attr("class", "stops")
+      .selectAll("path")
+        .data(topojson.feature(nyc, nyc.objects.stops).features)
+      .enter().append("path")
+        .attr("class", "stops")
+        .attr("d", path);
+});
+
 </script>
 
 </body>

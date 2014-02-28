@@ -32,5 +32,8 @@ tract_match:
 tracts_stops:
 	python src/tracts_stops.py
 
+geojson_dump:
+	python src/geojson_dump.py
+
 topojson:
-	topojson --width 800 --height 600 --margin 20 -s .25 -o src/web/v_larea.topojson src/web/v_larea.json
+	topojson --width 800 --height 750 --margin 20 -s .25 -o src/web/data.topojson -p -- src/web/tracts.json src/web/stops.json
