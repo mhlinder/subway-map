@@ -11,7 +11,8 @@ body {
     background-color: #557882;
     margin: auto;
 }
-.tracts, .stops {
+
+.tracts {
     stroke: #5B5A53;
 }
 
@@ -22,6 +23,10 @@ body {
 
 .stops {
     fill: #DBC76F;
+}
+
+.system {
+    stroke: #DBC76F;
 }
 
 </style>
@@ -39,7 +44,7 @@ var color = d3.scale.quantize()
                 .domain([11.4, 17.9])
                 .range(['q0', 'q1', 'q2', 'q3']);
 
-var path = d3.geo.path().projection(null).pointRadius(2.5);
+var path = d3.geo.path().projection(null).pointRadius(2);
 
 var svg = d3.select("body").append("svg")
     .attr("width", w)
@@ -60,7 +65,13 @@ d3.json('data.topojson', function (error, nyc) {
       .selectAll("path")
         .data(topojson.feature(nyc, nyc.objects.stops).features)
       .enter().append("path")
-        .attr("class", "stops")
+        .attr("d", path);
+
+    svg.append("g")
+        .attr("class", "system")
+      .selectAll("path")
+        .data(topojson.feature(nyc, nyc.objects.system).features)
+      .enter().append("path")
         .attr("d", path);
 });
 
