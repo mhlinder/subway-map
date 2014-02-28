@@ -31,3 +31,6 @@ tract_match:
 
 tracts_stops:
 	python src/tracts_stops.py
+
+topojson:
+	topojson --width 800 --height 600 --margin 20 -s .25 -o src/web/v_larea.topojson src/web/v_larea.json

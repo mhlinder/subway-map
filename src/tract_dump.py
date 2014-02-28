@@ -15,6 +15,7 @@ with open('src/web/v_larea.json', 'w') as f:
         region = tract['region']
 
         s = '{"type": "Feature", "properties" : {"v_larea": %s}, "geometry": %s}' % (tract['v_larea'], geojson.dumps(region))
+        # s = '{"type": "Feature", "geometry": %s}' % geojson.dumps(region)
         f.write(str(s))
 
         if i == len(tracts)-1:
