@@ -20,7 +20,9 @@ with open('src/web/tracts.json', 'w') as f:
         tract = tracts.iloc[i]
         region = tract['region']
 
-        s = '{"type": "Feature", "properties" : {"area": %s}, "geometry": %s}' % (tract['v_larea'], geojson.dumps(region))
+        # s = '{"type": "Feature", "properties" : {"area": %s}, "geometry": %s}' % (tract['v_larea'], geojson.dumps(region))
+        # s = '{"type": "Feature", "properties" : {"area": %s}, "geometry": %s}' % (tract['car'], geojson.dumps(region))
+        s = '{"type": "Feature", "properties" : {"area": %s}, "geometry": %s}' % (tract['graph_connectedness'], geojson.dumps(region))
         f.write(str(s))
     f.write(']}')
 
