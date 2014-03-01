@@ -6,7 +6,7 @@ from numpy import array, nan, tile, log
 from scipy import nanmean
 from shapely.geometry import Polygon, MultiPolygon
 from geopandas import GeoDataFrame
-from utils import nyc_boundary
+from src.utils import nyc_boundary
 
 acs_geoids = read_csv('data/save/tiger_match.csv')
 tiger = read_csv('data/save/tiger_match.csv')

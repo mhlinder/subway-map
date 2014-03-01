@@ -1,15 +1,32 @@
 <!DOCTYPE html>
 <html>
 
+<body>
+
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://d3js.org/topojson.v1.min.js"></script>
+
+<link href='http://fonts.googleapis.com/css?family=Sorts+Mill+Goudy' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Linden+Hill' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" type="text/css" href="http://mhlinder.com/style.css">
+
 <style>
 body {
     background-color: #557882;
+}
+
+.site {
+    color: #222;
+    width: 20em;
+    padding-left: 10px;
+    float:left;
 }
 
 .main {
     display: block;
     background-color: #557882;
     margin: auto;
+    float: left;
 }
 
 .tracts {
@@ -30,11 +47,21 @@ body {
 }
 
 </style>
+</head>
 
 <body>
-<script src="http://d3js.org/d3.v3.min.js"></script>
-<script src="http://d3js.org/queue.v1.min.js"></script>
-<script src="http://d3js.org/topojson.v1.min.js"></script>
+<div class="site">
+<h1>Counter Car Culture</h1>
+<h2>A statement and an introduction.</h2>
+<p> So what do you say to it, this car culture of which they speak?</p>
+
+<p>Our city is too dense for cars; so where we cannot drive, we built a
+transit network. Welcome to New York, the train will take you anywhere you won't
+walk.</p>
+
+<p>Our subway has altered our habits. The proportion of commuters who drive
+spikes outside the subway's scope: 
+</p>
 
 <script>
 var w = 800,
@@ -48,26 +75,27 @@ var svg = d3.select("body").append("svg")
     .attr("class", "main");
 
 d3.json('data.topojson', function (error, nyc) {
-    var areas = [];
+    var measures = [];
 
     var geos = nyc.objects.tracts.geometries;
     for (var i = 0; i < geos.length; i++) {
-        areas.push(geos[i].properties.area);
+        measures.push(geos[i].properties.measure);
     }
 
-    var min = Math.min.apply(null, areas),
-        max = Math.max.apply(null, areas);
+    var min = Math.min.apply(null, measures),
+        max = Math.max.apply(null, measures);
 
     var color = d3.scale.quantize()
-                    // .domain([11.4, 17.9])
                     .domain([min, max])
-                    .range(['q0', 'q1', 'q2', 'q3']);
+                    // distribution is skewed positively, so we weight the
+                    // right-hand tail
+                    .range(['q0', 'q1', 'q2', 'q3', 'q3', 'q3']);
     svg.append("g")
         .attr("class", "tracts")
       .selectAll("path")
         .data(topojson.feature(nyc, nyc.objects.tracts).features)
       .enter().append("path")
-        .attr("class", function(d) { return color(d.properties.area); })
+        .attr("class", function(d) { return color(d.properties.measure); })
         .attr("d", path);
 
     svg.append("g")
@@ -87,5 +115,6 @@ d3.json('data.topojson', function (error, nyc) {
 
 </script>
 
+</div><!-- .site -->
 </body>
 </html>

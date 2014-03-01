@@ -2,7 +2,11 @@ import geojson
 import pickle
 from shapely.geometry import Point, LineString
 from src.utils import nyc_boundary
-from numpy import where
+from numpy import where, isnan, isinf, log
+
+measure = 'car'
+# measure = 'v_larea'
+# measure = 'graph_connectedness'
 
 nyc = nyc_boundary()[0]
 bbox = nyc.bounds
@@ -14,15 +18,16 @@ system = pickle.load(open('data/save/system.p'))
 with open('src/web/tracts.json', 'w') as f:
     f.write('{"type": "FeatureCollection", "bbox": %s, "features": [\n' % str(list(bbox)))
     for i in range(len(tracts)):
+        # if i > 0 and not isnan(tracts.iloc[i-1][measure]):
         if i > 0:
             f.write(',\n')
-
         tract = tracts.iloc[i]
         region = tract['region']
-
-        s = '{"type": "Feature", "properties" : {"area": %s}, "geometry": %s}' % (tract['v_larea'], geojson.dumps(region))
-        # s = '{"type": "Feature", "properties" : {"area": %s}, "geometry": %s}' % (tract['car'], geojson.dumps(region))
-        # s = '{"type": "Feature", "properties" : {"area": %s}, "geometry": %s}' % (tract['graph_connectedness'], geojson.dumps(region))
+        m = tract[measure]
+        if isnan(m):
+            m = 1
+        # if not isnan(m):
+        s = '{"type": "Feature", "properties" : {"measure": %s}, "geometry": %s}' % (m, geojson.dumps(region))
         f.write(str(s))
     f.write(']}')
 

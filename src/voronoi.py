@@ -12,7 +12,7 @@ from networkx import Graph, all_neighbors
 
 import pickle
 
-from utils import nyc_boundary
+from src.utils import nyc_boundary
 
 # #      Table of Contents
 # 1.     Import NYC boundary data, structured as a Shapely MultiPolygon
