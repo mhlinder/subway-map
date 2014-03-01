@@ -40,10 +40,6 @@ body {
 var w = 800,
     h = 750;
 
-var color = d3.scale.quantize()
-                .domain([11.4, 17.9])
-                .range(['q0', 'q1', 'q2', 'q3']);
-
 var path = d3.geo.path().projection(null).pointRadius(2);
 
 var svg = d3.select("body").append("svg")
@@ -52,6 +48,20 @@ var svg = d3.select("body").append("svg")
     .attr("class", "main");
 
 d3.json('data.topojson', function (error, nyc) {
+    var areas = [];
+
+    var geos = nyc.objects.tracts.geometries;
+    for (var i = 0; i < geos.length; i++) {
+        areas.push(geos[i].properties.area);
+    }
+
+    var min = Math.min.apply(null, areas),
+        max = Math.max.apply(null, areas);
+
+    var color = d3.scale.quantize()
+                    // .domain([11.4, 17.9])
+                    .domain([min, max])
+                    .range(['q0', 'q1', 'q2', 'q3']);
     svg.append("g")
         .attr("class", "tracts")
       .selectAll("path")
