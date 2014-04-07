@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 
-<body>
+<head>
 
     <title>Counter Car Culture</title>
 
@@ -35,10 +35,18 @@
         stroke: #5B5A53;
     }
 
-    .q0 { fill: #C1BEAF; }
-    .q1 { fill: #75736A; }
-    .q2 { fill: #42413C; }
-    .q3 { fill: #353430; }
+    .q0 {
+        fill: #C1BEAF;
+    }
+    .q1 {
+        fill: #75736A;
+    }
+    .q2 {
+        fill: #42413C;
+    }
+    .q3 {
+        fill: #353430;
+    }
 
     .stops {
         fill: #DBC76F;
@@ -96,7 +104,7 @@ d3.json('data.topojson', function (error, nyc) {
                     .domain([min, max])
                     // distribution is skewed positively, so we weight the
                     // right-hand tail
-                    .range(['q0', 'q1', 'q2', 'q3', 'q3', 'q3']);
+                    .range(['q0', 'q1', 'q2', 'q2', 'q3', 'q3']);
     svg.append("g")
         .attr("class", "tracts")
       .selectAll("path")
